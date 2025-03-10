@@ -131,7 +131,7 @@ export function createWorkflowEditor(workflow, onSave, isNew = false) {
     // 创建底部按钮组
     const actions = document.createElement('div');
     actions.style.display = 'flex';
-    actions.style.justifyContent = 'flex-end';
+    actions.style.justifyContent = 'center';
     actions.style.gap = '12px';
     actions.style.marginTop = '20px';
 
@@ -144,6 +144,10 @@ export function createWorkflowEditor(workflow, onSave, isNew = false) {
     cancelBtn.style.borderRadius = '4px';
     cancelBtn.style.backgroundColor = 'white';
     cancelBtn.style.cursor = 'pointer';
+    cancelBtn.style.width = '120px';
+    cancelBtn.style.display = 'flex';
+    cancelBtn.style.alignItems = 'center';
+    cancelBtn.style.justifyContent = 'center';
 
     // 保存按钮
     const saveBtn = document.createElement('button');
@@ -155,6 +159,10 @@ export function createWorkflowEditor(workflow, onSave, isNew = false) {
     saveBtn.style.border = 'none';
     saveBtn.style.borderRadius = '4px';
     saveBtn.style.cursor = 'pointer';
+    saveBtn.style.width = '120px';
+    saveBtn.style.display = 'flex';
+    saveBtn.style.alignItems = 'center';
+    saveBtn.style.justifyContent = 'center';
 
     // 添加按钮事件
     cancelBtn.addEventListener('click', () => {
