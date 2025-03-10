@@ -37,6 +37,7 @@ initDB().then(() => {
             name: '新工作流',
             description: '点击编辑工作流描述',
             icon: 'default',
+            color: '',
             steps: [
                 {
                     id: crypto.randomUUID(),

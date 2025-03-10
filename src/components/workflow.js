@@ -10,6 +10,13 @@ export function createWorkflowElement(workflow) {
     const element = document.createElement('div');
     element.className = 'workflow-item';
     element.dataset.id = workflow.id;
+    
+    // 根据颜色属性添加描边
+    if (workflow.color) {
+        element.style.borderColor = workflow.color;
+        element.style.borderWidth = '1px';
+        element.style.borderStyle = 'solid';
+    }
 
     // 工作流头部（标题和操作按钮）
     const header = document.createElement('div');
@@ -165,6 +172,7 @@ function createStepElement(step, index) {
     mainContent.style.display = 'flex';
     mainContent.style.alignItems = 'center';
     mainContent.style.width = '100%';
+    mainContent.style.cursor = 'pointer'; // 添加指针样式
 
     // 步骤序号
     const number = document.createElement('span');
@@ -202,9 +210,6 @@ function createStepElement(step, index) {
     url.textContent = displayUrl;
     url.style.fontSize = '12px';
     url.style.color = '#666';
-    url.style.cursor = 'pointer';
-    url.style.textDecoration = 'underline';
-    url.title = step.url;
 
     // 添加下拉箭头
     const toggleButton = document.createElement('button');
@@ -231,8 +236,12 @@ function createStepElement(step, index) {
     memoContainer.style.fontSize = '12px';
     memoContainer.textContent = step.memo || '暂无备注';
 
-    // 添加点击事件
-    url.addEventListener('click', () => {
+    // 添加点击事件到整个内容区域（不包括箭头按钮）
+    mainContent.addEventListener('click', (e) => {
+        // 如果点击的是toggleButton，不执行跳转
+        if (e.target.closest('.toggle-button')) {
+            return;
+        }
         if (step.url) {
             chrome.tabs.create({ url: step.url });
         }
@@ -240,7 +249,7 @@ function createStepElement(step, index) {
 
     // 添加下拉箭头点击事件
     toggleButton.addEventListener('click', (e) => {
-        e.stopPropagation();
+        e.stopPropagation(); // 阻止事件冒泡
         const isExpanded = memoContainer.style.display === 'block';
         memoContainer.style.display = isExpanded ? 'none' : 'block';
         toggleButton.style.transform = isExpanded ? 'rotate(0deg)' : 'rotate(180deg)';

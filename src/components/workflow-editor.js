@@ -52,6 +52,109 @@ export function createWorkflowEditor(workflow, onSave, isNew = false) {
     titleInput.style.marginBottom = '16px';
     titleInput.style.boxSizing = 'border-box';
 
+    // 创建颜色选择器容器
+    const colorContainer = document.createElement('div');
+    colorContainer.style.marginBottom = '16px';
+    colorContainer.style.display = 'flex';
+    colorContainer.style.alignItems = 'center';
+    colorContainer.style.gap = '8px';
+    colorContainer.style.flexDirection = 'row';
+    colorContainer.style.flexWrap = 'nowrap';
+
+    // 颜色选择器标签
+    const colorLabel = document.createElement('span');
+    colorLabel.textContent = '标签颜色：';
+    colorLabel.style.fontSize = '14px';
+    colorLabel.style.color = '#666';
+    colorLabel.style.whiteSpace = 'nowrap';
+
+    // 颜色选择器按钮组
+    const colorButtons = document.createElement('div');
+    colorButtons.style.display = 'flex';
+    colorButtons.style.gap = '8px';
+    colorButtons.style.flexDirection = 'row';
+    colorButtons.style.flexWrap = 'nowrap';
+
+    // 定义颜色选项
+    const colors = [
+        { name: '红色', value: '#FF3B30' },
+        { name: '橙色', value: '#FF9500' },
+        { name: '黄色', value: '#FFCC00' },
+        { name: '绿色', value: '#34C759' },
+        { name: '蓝色', value: '#007AFF' },
+        { name: '紫色', value: '#AF52DE' },
+        { name: '灰色', value: '#8E8E93' }
+    ];
+
+    // 创建颜色按钮
+    colors.forEach(color => {
+        const button = document.createElement('button');
+        button.title = color.name;
+        button.style.width = '20px';
+        button.style.height = '20px';
+        button.style.borderRadius = '10px';
+        button.style.backgroundColor = color.value;
+        button.style.border = '1px solid rgba(0,0,0,0.1)';
+        button.style.cursor = 'pointer';
+        button.style.padding = '0';
+        button.style.transition = 'transform 0.2s';
+        button.style.position = 'relative';
+        button.style.display = 'flex';
+        button.style.alignItems = 'center';
+        button.style.justifyContent = 'center';
+
+        // 创建选中状态的对勾
+        if (workflow.color === color.value) {
+            const checkmark = document.createElement('div');
+            checkmark.innerHTML = `
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3">
+                    <path d="M20 6L9 17L4 12"/>
+                </svg>
+            `;
+            button.appendChild(checkmark);
+        }
+
+        button.addEventListener('mouseover', () => {
+            button.style.transform = 'scale(1.1)';
+        });
+
+        button.addEventListener('mouseout', () => {
+            button.style.transform = 'scale(1)';
+        });
+
+        button.addEventListener('click', () => {
+            // 如果当前颜色已经被选中，则取消选择
+            if (workflow.color === color.value) {
+                button.innerHTML = '';
+                workflow.color = '';
+                return;
+            }
+            
+            // 移除所有按钮的对勾
+            colorButtons.querySelectorAll('button').forEach(btn => {
+                btn.innerHTML = '';
+            });
+            
+            // 添加新的对勾到当前按钮
+            const checkmark = document.createElement('div');
+            checkmark.innerHTML = `
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3">
+                    <path d="M20 6L9 17L4 12"/>
+                </svg>
+            `;
+            button.appendChild(checkmark);
+            
+            // 更新工作流颜色
+            workflow.color = color.value;
+        });
+
+        colorButtons.appendChild(button);
+    });
+
+    // 组装颜色选择器
+    colorContainer.appendChild(colorLabel);
+    colorContainer.appendChild(colorButtons);
+
     // 标题输入事件
     titleInput.addEventListener('input', (e) => {
         workflow.name = e.target.value;
@@ -192,6 +295,7 @@ export function createWorkflowEditor(workflow, onSave, isNew = false) {
     flowchart.appendChild(addStepBtn);
 
     editor.appendChild(titleInput);
+    editor.appendChild(colorContainer);
     editor.appendChild(flowchart);
     editor.appendChild(actions);
 
