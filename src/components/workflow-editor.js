@@ -1,12 +1,13 @@
-import { updateWorkflow } from '../utils/db.js';
+import { updateWorkflow, addWorkflow } from '../utils/db.js';
 
 /**
  * 创建流程图编辑器
  * @param {Object} workflow - 工作流对象
  * @param {Function} onSave - 保存回调函数
+ * @param {boolean} isNew - 是否为新建工作流
  * @returns {HTMLElement}
  */
-export function createWorkflowEditor(workflow, onSave) {
+export function createWorkflowEditor(workflow, onSave, isNew = false) {
     // 创建模态框容器
     const modal = document.createElement('div');
     modal.className = 'workflow-editor-modal';
@@ -162,7 +163,12 @@ export function createWorkflowEditor(workflow, onSave) {
 
     saveBtn.addEventListener('click', async () => {
         try {
-            await updateWorkflow(workflow);
+            // 根据是否为新建工作流选择不同的保存方法
+            if (isNew) {
+                await addWorkflow(workflow);
+            } else {
+                await updateWorkflow(workflow);
+            }
             onSave(workflow);
             modal.remove();
         } catch (error) {

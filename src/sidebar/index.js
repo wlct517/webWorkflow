@@ -58,14 +58,13 @@ initDB().then(() => {
         
         createWorkflowEditor(workflow, async (updatedWorkflow) => {
             try {
-                await addWorkflow(updatedWorkflow);
                 const element = createWorkflowElement(updatedWorkflow);
                 workflowList.appendChild(element);
             } catch (error) {
                 console.error('创建工作流失败：', error);
                 alert('创建工作流失败：' + error.message);
             }
-        });
+        }, true);
     }
 
     // 搜索功能

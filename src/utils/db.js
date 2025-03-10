@@ -1,37 +1,11 @@
-// IndexedDB 数据库工具函数
-
-const DB_NAME = 'workflowDB';
-const DB_VERSION = 1;
-const STORE_NAME = 'workflows';
-
-let db = null;
+// Chrome Storage API 工具函数
 
 /**
  * 初始化数据库
  * @returns {Promise<void>}
  */
 export function initDB() {
-    return new Promise((resolve, reject) => {
-        const request = indexedDB.open(DB_NAME, DB_VERSION);
-
-        request.onerror = () => {
-            reject(new Error('数据库打开失败'));
-        };
-
-        request.onsuccess = (event) => {
-            db = event.target.result;
-            resolve();
-        };
-
-        request.onupgradeneeded = (event) => {
-            const db = event.target.result;
-            if (!db.objectStoreNames.contains(STORE_NAME)) {
-                const store = db.createObjectStore(STORE_NAME, { keyPath: 'id' });
-                store.createIndex('name', 'name', { unique: false });
-                store.createIndex('created_at', 'created_at', { unique: false });
-            }
-        };
-    });
+    return Promise.resolve();
 }
 
 /**
@@ -39,18 +13,10 @@ export function initDB() {
  * @returns {Promise<Array>}
  */
 export function getAllWorkflows() {
-    return new Promise((resolve, reject) => {
-        const transaction = db.transaction([STORE_NAME], 'readonly');
-        const store = transaction.objectStore(STORE_NAME);
-        const request = store.getAll();
-
-        request.onsuccess = () => {
-            resolve(request.result);
-        };
-
-        request.onerror = () => {
-            reject(new Error('获取工作流失败'));
-        };
+    return new Promise((resolve) => {
+        chrome.storage.local.get(['workflows'], (result) => {
+            resolve(result.workflows || []);
+        });
     });
 }
 
@@ -61,17 +27,16 @@ export function getAllWorkflows() {
  */
 export function addWorkflow(workflow) {
     return new Promise((resolve, reject) => {
-        const transaction = db.transaction([STORE_NAME], 'readwrite');
-        const store = transaction.objectStore(STORE_NAME);
-        const request = store.add(workflow);
-
-        request.onsuccess = () => {
-            resolve();
-        };
-
-        request.onerror = () => {
-            reject(new Error('添加工作流失败'));
-        };
+        getAllWorkflows().then(workflows => {
+            workflows.push(workflow);
+            chrome.storage.local.set({ workflows }, () => {
+                if (chrome.runtime.lastError) {
+                    reject(new Error('添加工作流失败：' + chrome.runtime.lastError.message));
+                } else {
+                    resolve();
+                }
+            });
+        });
     });
 }
 
@@ -82,17 +47,21 @@ export function addWorkflow(workflow) {
  */
 export function updateWorkflow(workflow) {
     return new Promise((resolve, reject) => {
-        const transaction = db.transaction([STORE_NAME], 'readwrite');
-        const store = transaction.objectStore(STORE_NAME);
-        const request = store.put(workflow);
-
-        request.onsuccess = () => {
-            resolve();
-        };
-
-        request.onerror = () => {
-            reject(new Error('更新工作流失败'));
-        };
+        getAllWorkflows().then(workflows => {
+            const index = workflows.findIndex(w => w.id === workflow.id);
+            if (index === -1) {
+                reject(new Error('工作流不存在'));
+                return;
+            }
+            workflows[index] = workflow;
+            chrome.storage.local.set({ workflows }, () => {
+                if (chrome.runtime.lastError) {
+                    reject(new Error('更新工作流失败：' + chrome.runtime.lastError.message));
+                } else {
+                    resolve();
+                }
+            });
+        });
     });
 }
 
@@ -103,17 +72,16 @@ export function updateWorkflow(workflow) {
  */
 export function deleteWorkflow(id) {
     return new Promise((resolve, reject) => {
-        const transaction = db.transaction([STORE_NAME], 'readwrite');
-        const store = transaction.objectStore(STORE_NAME);
-        const request = store.delete(id);
-
-        request.onsuccess = () => {
-            resolve();
-        };
-
-        request.onerror = () => {
-            reject(new Error('删除工作流失败'));
-        };
+        getAllWorkflows().then(workflows => {
+            const filteredWorkflows = workflows.filter(w => w.id !== id);
+            chrome.storage.local.set({ workflows: filteredWorkflows }, () => {
+                if (chrome.runtime.lastError) {
+                    reject(new Error('删除工作流失败：' + chrome.runtime.lastError.message));
+                } else {
+                    resolve();
+                }
+            });
+        });
     });
 }
 
@@ -124,16 +92,13 @@ export function deleteWorkflow(id) {
  */
 export function getWorkflow(id) {
     return new Promise((resolve, reject) => {
-        const transaction = db.transaction([STORE_NAME], 'readonly');
-        const store = transaction.objectStore(STORE_NAME);
-        const request = store.get(id);
-
-        request.onsuccess = () => {
-            resolve(request.result);
-        };
-
-        request.onerror = () => {
-            reject(new Error('获取工作流失败'));
-        };
+        getAllWorkflows().then(workflows => {
+            const workflow = workflows.find(w => w.id === id);
+            if (!workflow) {
+                reject(new Error('工作流不存在'));
+            } else {
+                resolve(workflow);
+            }
+        });
     });
 } 
