@@ -281,7 +281,6 @@ function createStepElement(step, index) {
     url.textContent = displayUrl;
     url.style.fontSize = '12px';
     url.style.color = '#666';
-    url.style.paddingLeft = '32px';  // 与图标对齐的缩进
 
     titleRow.appendChild(favicon);
     titleRow.appendChild(title);

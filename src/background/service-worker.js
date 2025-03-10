@@ -36,12 +36,17 @@ async function getFaviconAndTitle(url) {
         
         // 尝试不同的图标获取方式
         const possibleFaviconUrls = [
+            // 1. 先尝试获取页面中声明的图标
             `${urlObj.origin}/favicon.ico`,
             `${urlObj.origin}/favicon.png`,
-            `https://www.google.com/s2/favicons?domain=${domain}&sz=64`
+            // 2. 尝试apple-touch-icon
+            `${urlObj.origin}/apple-touch-icon.png`,
+            `${urlObj.origin}/apple-touch-icon-precomposed.png`,
+            // 3. 最后使用Google的favicon服务
+            `https://www.google.com/s2/favicons?domain=${encodeURIComponent(domain)}&sz=64`
         ];
 
-        // 创建一个临时标签页来获取标题
+        // 创建一个临时标签页来获取标题和页面中声明的图标
         const tab = await chrome.tabs.create({ url: url, active: false });
 
         // 等待页面加载完成
@@ -54,14 +59,29 @@ async function getFaviconAndTitle(url) {
             });
         });
 
-        // 获取标题
-        const [{ result: title }] = await chrome.scripting.executeScript({
+        // 获取标题和页面中声明的图标
+        const [{ result: pageInfo }] = await chrome.scripting.executeScript({
             target: { tabId: tab.id },
-            func: () => document.title
+            func: () => {
+                // 获取页面中声明的所有图标
+                const icons = Array.from(document.querySelectorAll('link[rel*="icon"]'))
+                    .map(link => link.href)
+                    .filter(href => href); // 过滤掉空值
+
+                return {
+                    title: document.title,
+                    icons: icons
+                };
+            }
         });
 
         // 关闭临时标签页
         await chrome.tabs.remove(tab.id);
+
+        // 将页面中声明的图标添加到尝试列表的最前面
+        if (pageInfo.icons && pageInfo.icons.length > 0) {
+            possibleFaviconUrls.unshift(...pageInfo.icons);
+        }
 
         // 尝试获取图标
         let favicon = null;
@@ -79,10 +99,10 @@ async function getFaviconAndTitle(url) {
 
         // 如果所有方法都失败，使用Google的favicon服务
         if (!favicon) {
-            favicon = `https://www.google.com/s2/favicons?domain=${domain}&sz=64`;
+            favicon = `https://www.google.com/s2/favicons?domain=${encodeURIComponent(domain)}&sz=64`;
         }
 
-        return { title, favicon };
+        return { title: pageInfo.title, favicon };
     } catch (error) {
         console.error('获取网站信息失败:', error);
         return { title: '', favicon: '' };
