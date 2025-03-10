@@ -191,7 +191,14 @@ function createStepElement(step, index) {
     title.style.fontWeight = '500';
 
     const url = document.createElement('div');
-    const displayUrl = step.url ? new URL(step.url).hostname : '';
+    const displayUrl = step.url ? (() => {
+        try {
+            const urlObj = new URL(step.url);
+            return urlObj.hostname;
+        } catch (e) {
+            return step.url;
+        }
+    })() : '';
     url.textContent = displayUrl;
     url.style.fontSize = '12px';
     url.style.color = '#666';

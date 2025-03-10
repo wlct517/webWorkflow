@@ -247,7 +247,7 @@ function createStepNode(step, index) {
     const memoInput = document.createElement('input');
     memoInput.type = 'text';
     memoInput.value = step.memo || '';
-    memoInput.placeholder = '步骤备注';
+    memoInput.placeholder = '备注';
     memoInput.style.width = '100%';
     memoInput.style.padding = '4px 8px';
     memoInput.style.border = '1px solid #ddd';

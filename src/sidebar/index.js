@@ -12,7 +12,6 @@ initDB().then(() => {
     const newWorkflowBtn = document.getElementById('newWorkflowBtn');
     const importBtn = document.getElementById('importBtn');
     const exportBtn = document.getElementById('exportBtn');
-    const settingsBtn = document.getElementById('settingsBtn');
 
     // 加载工作流列表
     async function loadWorkflows(searchTerm = '') {
@@ -98,12 +97,6 @@ initDB().then(() => {
 
     // 新建工作流
     newWorkflowBtn.addEventListener('click', createNewWorkflow);
-
-    // 设置按钮
-    settingsBtn.addEventListener('click', () => {
-        // TODO: 实现设置功能
-        alert('设置功能开发中...');
-    });
 
     // 初始加载
     loadWorkflows();
