@@ -1,0 +1,37 @@
+{
+  "manifest_version": 3,
+  "name": "工作流助手",
+  "description": "帮助用户管理和执行多网站工作流程的浏览器插件",
+  "version": "1.0.0",
+  "icons": {
+    "16": "public/icons/icon-16.png",
+    "32": "public/icons/icon-32.png",
+    "48": "public/icons/icon-48.png",
+    "128": "public/icons/icon-128.png"
+  },
+  "permissions": [
+    "storage",
+    "tabs",
+    "clipboardRead",
+    "clipboardWrite",
+    "favicon",
+    "sidePanel",
+    "scripting"
+  ],
+  "side_panel": {
+    "default_path": "src/sidebar/index.html"
+  },
+  "background": {
+    "service_worker": "src/background/service-worker.js",
+    "type": "module"
+  },
+  "action": {
+    "default_title": "工作流助手",
+    "default_icon": {
+      "16": "public/icons/icon-16.png",
+      "32": "public/icons/icon-32.png",
+      "48": "public/icons/icon-48.png",
+      "128": "public/icons/icon-128.png"
+    }
+  }
+} 

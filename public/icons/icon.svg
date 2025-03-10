@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="128" height="128" viewBox="0 0 128 128" xmlns="http://www.w3.org/2000/svg">
+    <!-- 背景圆形 -->
+    <circle cx="64" cy="64" r="60" fill="#007AFF"/>
+    
+    <!-- 工作流图标 -->
+    <g fill="white" transform="translate(32, 32)">
+        <!-- 连接线 -->
+        <path d="M32 12v40" stroke="white" stroke-width="4" stroke-linecap="round"/>
+        
+        <!-- 上圆点 -->
+        <circle cx="32" cy="12" r="8"/>
+        
+        <!-- 中间圆点 -->
+        <circle cx="32" cy="32" r="8"/>
+        
+        <!-- 下圆点 -->
+        <circle cx="32" cy="52" r="8"/>
+        
+        <!-- 左连接线 -->
+        <path d="M32 32H12" stroke="white" stroke-width="4" stroke-linecap="round"/>
+        
+        <!-- 右连接线 -->
+        <path d="M32 32h20" stroke="white" stroke-width="4" stroke-linecap="round"/>
+    </g>
+</svg> 

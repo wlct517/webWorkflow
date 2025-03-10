@@ -1,0 +1,157 @@
+/* 全局样式重置 */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+/* 根样式 */
+:root {
+    --primary-color: #007AFF;
+    --background-color: #FFFFFF;
+    --text-color: #000000;
+    --border-color: #E5E5EA;
+    --hover-color: #F2F2F7;
+    --shadow-color: rgba(0, 0, 0, 0.1);
+    --border-radius: 8px;
+    --spacing-xs: 4px;
+    --spacing-sm: 8px;
+    --spacing-md: 16px;
+    --spacing-lg: 24px;
+}
+
+/* 基础样式 */
+body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    background-color: var(--background-color);
+    color: var(--text-color);
+    line-height: 1.5;
+    font-size: 14px;
+}
+
+/* 容器布局 */
+.sidebar-container {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    max-width: 320px;
+    margin: 0 auto;
+}
+
+/* 头部样式 */
+.header {
+    padding: var(--spacing-md);
+    border-bottom: 1px solid var(--border-color);
+    background-color: rgba(255, 255, 255, 0.8);
+    backdrop-filter: blur(10px);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+}
+
+/* 搜索栏样式 */
+.search-bar {
+    display: flex;
+    align-items: center;
+    margin-bottom: var(--spacing-md);
+    background-color: var(--hover-color);
+    border-radius: var(--border-radius);
+    padding: var(--spacing-xs) var(--spacing-sm);
+}
+
+.search-bar input {
+    flex: 1;
+    border: none;
+    background: none;
+    padding: var(--spacing-xs) var(--spacing-sm);
+    font-size: 14px;
+    outline: none;
+}
+
+/* 按钮样式 */
+.actions {
+    display: flex;
+    gap: var(--spacing-sm);
+    justify-content: flex-end;
+}
+
+.icon-button {
+    background: none;
+    border: none;
+    padding: var(--spacing-xs);
+    cursor: pointer;
+    border-radius: var(--border-radius);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.icon-button:hover {
+    background-color: var(--hover-color);
+}
+
+.icon-button svg {
+    fill: currentColor;
+}
+
+.primary-button {
+    background-color: var(--primary-color);
+    color: white;
+    border: none;
+    padding: var(--spacing-sm) var(--spacing-md);
+    border-radius: var(--border-radius);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+    font-weight: 500;
+}
+
+.primary-button:hover {
+    opacity: 0.9;
+}
+
+.primary-button svg {
+    fill: currentColor;
+}
+
+/* 主要内容区域 */
+.main {
+    flex: 1;
+    overflow-y: auto;
+    padding: var(--spacing-md);
+}
+
+/* 工作流列表样式 */
+.workflow-list {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-md);
+}
+
+.workflow-item {
+    background-color: var(--background-color);
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius);
+    padding: var(--spacing-md);
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.workflow-item:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px var(--shadow-color);
+}
+
+/* 底部工具栏 */
+.footer {
+    padding: var(--spacing-md);
+    border-top: 1px solid var(--border-color);
+    background-color: rgba(255, 255, 255, 0.8);
+    backdrop-filter: blur(10px);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    position: sticky;
+    bottom: 0;
+} 

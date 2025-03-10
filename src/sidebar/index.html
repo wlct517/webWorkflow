@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>工作流助手</title>
+    <link rel="stylesheet" href="../../public/styles/sidebar.css">
+</head>
+<body>
+    <div class="sidebar-container">
+        <!-- 顶部搜索栏 -->
+        <header class="header">
+            <div class="search-bar">
+                <input type="search" id="searchInput" placeholder="搜索工作流...">
+                <button id="searchBtn" aria-label="搜索">
+                    <svg width="20" height="20" viewBox="0 0 20 20">
+                        <path d="M8.5 3a5.5 5.5 0 0 1 4.227 9.02l4.127 4.126a.5.5 0 0 1-.638.765l-.07-.057-4.126-4.127A5.5 5.5 0 1 1 8.5 3Zm0 1a4.5 4.5 0 1 0 0 9 4.5 4.5 0 0 0 0-9Z"/>
+                    </svg>
+                </button>
+            </div>
+            <div class="actions">
+                <button id="importBtn" class="icon-button" aria-label="导入">
+                    <svg width="20" height="20" viewBox="0 0 20 20">
+                        <path d="M10 2a.5.5 0 0 1 .5.5v8.793l3.146-3.147a.5.5 0 0 1 .708.708l-4 4a.5.5 0 0 1-.708 0l-4-4a.5.5 0 1 1 .708-.708L9.5 11.293V2.5A.5.5 0 0 1 10 2ZM3 13.5a.5.5 0 0 1 .5-.5h13a.5.5 0 0 1 0 1h-13a.5.5 0 0 1-.5-.5Z"/>
+                    </svg>
+                </button>
+                <button id="exportBtn" class="icon-button" aria-label="导出">
+                    <svg width="20" height="20" viewBox="0 0 20 20">
+                        <path d="M10 2a.5.5 0 0 1 .5.5v8.793l3.146-3.147a.5.5 0 0 1 .708.708l-4 4a.5.5 0 0 1-.708 0l-4-4a.5.5 0 0 1 .708-.708L9.5 11.293V2.5A.5.5 0 0 1 10 2ZM3 13.5a.5.5 0 0 1 .5-.5h13a.5.5 0 0 1 0 1h-13a.5.5 0 0 1-.5-.5Z"/>
+                    </svg>
+                </button>
+            </div>
+        </header>
+
+        <!-- 工作流列表 -->
+        <main class="main">
+            <div id="workflowList" class="workflow-list">
+                <!-- 工作流项目将通过JavaScript动态添加 -->
+            </div>
+        </main>
+
+        <!-- 底部工具栏 -->
+        <footer class="footer">
+            <button id="newWorkflowBtn" class="primary-button">
+                <svg width="20" height="20" viewBox="0 0 20 20">
+                    <path d="M10 3a.5.5 0 0 1 .5.5V9h5.5a.5.5 0 0 1 0 1H10.5v5.5a.5.5 0 0 1-1 0V10H4a.5.5 0 0 1 0-1h5.5V3.5A.5.5 0 0 1 10 3Z"/>
+                </svg>
+                新建工作流
+            </button>
+            <button id="settingsBtn" class="icon-button" aria-label="设置">
+                <svg width="20" height="20" viewBox="0 0 20 20">
+                    <path d="M10 3a7 7 0 1 1 0 14 7 7 0 0 1 0-14Zm0 1a6 6 0 1 0 0 12 6 6 0 0 0 0-12Zm0 2a4 4 0 1 1 0 8 4 4 0 0 1 0-8Zm0 1a3 3 0 1 0 0 6 3 3 0 0 0 0-6Z"/>
+                </svg>
+            </button>
+        </footer>
+    </div>
+    <script type="module" src="../../src/utils/db.js"></script>
+    <script type="module" src="../../src/utils/io.js"></script>
+    <script type="module" src="../../src/components/workflow.js"></script>
+    <script type="module" src="./index.js"></script>
+</body>
+</html> 
