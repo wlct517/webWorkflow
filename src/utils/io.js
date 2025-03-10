@@ -1,13 +1,41 @@
 import { getAllWorkflows, addWorkflow } from './db.js';
 
 /**
- * 导出工作流数据
+ * 导出选中的工作流数据
+ * @param {Array<string>} selectedIds - 选中的工作流ID数组
  * @returns {Promise<void>}
  */
-export function exportData() {
+export function exportSelected(selectedIds) {
     return new Promise((resolve, reject) => {
         try {
-            // 使用Chrome Storage API获取工作流数据
+            chrome.storage.local.get(['workflows'], (result) => {
+                const allWorkflows = result.workflows || [];
+                const selectedWorkflows = allWorkflows.filter(workflow => selectedIds.includes(workflow.id));
+                
+                const blob = new Blob([JSON.stringify(selectedWorkflows, null, 2)], { type: 'application/json' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `workflows_${new Date().toISOString()}.json`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+                resolve();
+            });
+        } catch (error) {
+            reject(error);
+        }
+    });
+}
+
+/**
+ * 导出全部工作流数据
+ * @returns {Promise<void>}
+ */
+export function exportAll() {
+    return new Promise((resolve, reject) => {
+        try {
             chrome.storage.local.get(['workflows'], (result) => {
                 const workflows = result.workflows || [];
                 const blob = new Blob([JSON.stringify(workflows, null, 2)], { type: 'application/json' });

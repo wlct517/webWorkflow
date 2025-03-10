@@ -44,13 +44,19 @@
                         </svg>
                         导入
                     </button>
-                    <button id="exportBtn" class="secondary-button" aria-label="导出">
-                        <svg width="20" height="20" viewBox="0 0 20 20">
-                            <path d="M10 18a.5.5 0 0 1-.5-.5V8.707L6.354 11.854a.5.5 0 1 1-.708-.708l4-4a.5.5 0 0 1 .708 0l4 4a.5.5 0 0 1-.708.708L10.5 8.707v8.793a.5.5 0 0 1-.5.5Z"/>
-                            <path d="M3 6.5a.5.5 0 0 1 .5-.5h13a.5.5 0 0 1 0 1h-13a.5.5 0 0 1-.5-.5Z"/>
-                        </svg>
-                        导出
-                    </button>
+                    <div class="export-dropdown">
+                        <button id="exportBtn" class="secondary-button" aria-label="导出">
+                            <svg width="20" height="20" viewBox="0 0 20 20">
+                                <path d="M10 18a.5.5 0 0 1-.5-.5V8.707L6.354 11.854a.5.5 0 1 1-.708-.708l4-4a.5.5 0 0 1 .708 0l4 4a.5.5 0 0 1-.708.708L10.5 8.707v8.793a.5.5 0 0 1-.5.5Z"/>
+                                <path d="M3 6.5a.5.5 0 0 1 .5-.5h13a.5.5 0 0 1 0 1h-13a.5.5 0 0 1-.5-.5Z"/>
+                            </svg>
+                            导出
+                        </button>
+                        <div class="export-menu">
+                            <button id="exportSelectedBtn" class="export-menu-item">选择导出</button>
+                            <button id="exportAllBtn" class="export-menu-item">全部导出</button>
+                        </div>
+                    </div>
                 </div>
             </div>
         </footer>

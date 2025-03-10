@@ -1,6 +1,6 @@
 // 导入工具函数
 import { initDB, getAllWorkflows, addWorkflow, deleteWorkflow, updateWorkflow } from '../utils/db.js';
-import { exportData, importData } from '../utils/io.js';
+import { exportSelected, exportAll, importData } from '../utils/io.js';
 import { createWorkflowElement, editWorkflow } from '../components/workflow.js';
 import { createWorkflowEditor } from '../components/workflow-editor.js';
 import { showSettings } from '../components/settings.js';
@@ -14,6 +14,8 @@ initDB().then(() => {
     const newWorkflowBtn = document.getElementById('newWorkflowBtn');
     const importBtn = document.getElementById('importBtn');
     const exportBtn = document.getElementById('exportBtn');
+    const exportSelectedBtn = document.getElementById('exportSelectedBtn');
+    const exportAllBtn = document.getElementById('exportAllBtn');
     const settingsBtn = document.getElementById('settingsBtn');
 
     // 加载工作流列表
@@ -51,7 +53,7 @@ initDB().then(() => {
         const workflow = {
             id: crypto.randomUUID(),
             name: '新工作流',
-            description: '点击编辑工作流描述',
+            description: '',
             icon: 'default',
             color: '',
             steps: [
@@ -103,9 +105,75 @@ initDB().then(() => {
         }
     });
 
-    exportBtn.addEventListener('click', async () => {
+    // 选择导出功能
+    exportSelectedBtn.addEventListener('click', async () => {
         try {
-            await exportData();
+            // 获取所有工作流
+            const workflows = await getAllWorkflows();
+            
+            // 创建选择对话框
+            const dialog = document.createElement('div');
+            dialog.className = 'export-dialog';
+            dialog.innerHTML = `
+                <div class="export-dialog-content">
+                    <h3>选择要导出的工作流</h3>
+                    <div class="workflow-checkboxes"></div>
+                    <div class="dialog-actions">
+                        <button class="secondary-button" id="cancelExport">取消</button>
+                        <button class="primary-button" id="confirmExport">确认导出</button>
+                    </div>
+                </div>
+            `;
+            
+            // 添加工作流选择框
+            const checkboxesContainer = dialog.querySelector('.workflow-checkboxes');
+            workflows.forEach(workflow => {
+                const label = document.createElement('label');
+                label.className = 'workflow-checkbox';
+                label.innerHTML = `
+                    <input type="checkbox" value="${workflow.id}">
+                    <span>${workflow.name}</span>
+                `;
+                checkboxesContainer.appendChild(label);
+            });
+            
+            // 添加到页面
+            document.body.appendChild(dialog);
+            
+            // 绑定事件
+            const cancelBtn = dialog.querySelector('#cancelExport');
+            const confirmBtn = dialog.querySelector('#confirmExport');
+            
+            cancelBtn.addEventListener('click', () => {
+                dialog.remove();
+            });
+            
+            confirmBtn.addEventListener('click', async () => {
+                const selectedIds = Array.from(dialog.querySelectorAll('input[type="checkbox"]:checked'))
+                    .map(checkbox => checkbox.value);
+                
+                if (selectedIds.length === 0) {
+                    alert('请至少选择一个工作流');
+                    return;
+                }
+                
+                try {
+                    await exportSelected(selectedIds);
+                    dialog.remove();
+                    alert('导出成功！');
+                } catch (error) {
+                    alert('导出失败：' + error.message);
+                }
+            });
+        } catch (error) {
+            alert('导出失败：' + error.message);
+        }
+    });
+
+    // 全部导出功能
+    exportAllBtn.addEventListener('click', async () => {
+        try {
+            await exportAll();
             alert('导出成功！');
         } catch (error) {
             alert('导出失败：' + error.message);
