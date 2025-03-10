@@ -7,12 +7,9 @@ import { getAllWorkflows, addWorkflow } from './db.js';
 export function exportData() {
     return new Promise((resolve, reject) => {
         try {
-            const transaction = db.transaction([STORE_NAME], 'readonly');
-            const store = transaction.objectStore(STORE_NAME);
-            const request = store.getAll();
-
-            request.onsuccess = () => {
-                const workflows = request.result;
+            // 使用Chrome Storage API获取工作流数据
+            chrome.storage.local.get(['workflows'], (result) => {
+                const workflows = result.workflows || [];
                 const blob = new Blob([JSON.stringify(workflows, null, 2)], { type: 'application/json' });
                 const url = URL.createObjectURL(blob);
                 const a = document.createElement('a');
@@ -23,11 +20,7 @@ export function exportData() {
                 document.body.removeChild(a);
                 URL.revokeObjectURL(url);
                 resolve();
-            };
-
-            request.onerror = () => {
-                reject(new Error('导出失败'));
-            };
+            });
         } catch (error) {
             reject(error);
         }
