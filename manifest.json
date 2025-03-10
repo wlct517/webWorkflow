@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
   "name": "工作流助手",
-  "description": "帮助用户管理和执行多网站工作流程的浏览器插件",
-  "version": "1.0.0",
+  "version": "1.0",
+  "description": "帮助用户管理和执行多网站工作流程的Chrome浏览器插件",
   "icons": {
     "16": "public/icons/icon-16.png",
     "32": "public/icons/icon-32.png",

@@ -3,6 +3,8 @@ import { initDB, getAllWorkflows, addWorkflow, deleteWorkflow, updateWorkflow } 
 import { exportData, importData } from '../utils/io.js';
 import { createWorkflowElement, editWorkflow } from '../components/workflow.js';
 import { createWorkflowEditor } from '../components/workflow-editor.js';
+import { showSettings } from '../components/settings.js';
+import { searchWithAI } from '../utils/ai-search.js';
 
 // 初始化数据库
 initDB().then(() => {
@@ -12,18 +14,32 @@ initDB().then(() => {
     const newWorkflowBtn = document.getElementById('newWorkflowBtn');
     const importBtn = document.getElementById('importBtn');
     const exportBtn = document.getElementById('exportBtn');
+    const settingsBtn = document.getElementById('settingsBtn');
 
     // 加载工作流列表
     async function loadWorkflows(searchTerm = '') {
         const workflows = await getAllWorkflows();
+        
+        // 清空现有列表
         workflowList.innerHTML = '';
         
-        const filteredWorkflows = searchTerm
-            ? workflows.filter(w => 
-                w.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                w.description.toLowerCase().includes(searchTerm.toLowerCase()))
-            : workflows;
+        let filteredWorkflows = workflows;
         
+        if (searchTerm) {
+            try {
+                // 尝试使用AI搜索
+                filteredWorkflows = await searchWithAI(searchTerm, workflows);
+            } catch (error) {
+                console.error('AI搜索失败，使用普通搜索：', error);
+                // 如果AI搜索失败，使用普通搜索
+                filteredWorkflows = workflows.filter(w => 
+                    w.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                    w.description?.toLowerCase().includes(searchTerm.toLowerCase())
+                );
+            }
+        }
+        
+        // 渲染工作流列表
         filteredWorkflows.forEach(workflow => {
             const element = createWorkflowElement(workflow);
             workflowList.appendChild(element);
@@ -94,6 +110,11 @@ initDB().then(() => {
         } catch (error) {
             alert('导出失败：' + error.message);
         }
+    });
+
+    // 设置按钮点击事件
+    settingsBtn.addEventListener('click', () => {
+        showSettings();
     });
 
     // 新建工作流

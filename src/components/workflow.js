@@ -25,6 +25,8 @@ export function createWorkflowElement(workflow) {
     header.style.justifyContent = 'space-between';
     header.style.alignItems = 'center';
     header.style.marginBottom = '8px';
+    header.style.width = '100%';  // 添加宽度100%
+    header.style.boxSizing = 'border-box';  // 添加盒模型
 
     // 标题
     const title = document.createElement('input');
@@ -37,7 +39,8 @@ export function createWorkflowElement(workflow) {
     title.style.border = 'none';
     title.style.outline = 'none';
     title.style.backgroundColor = 'transparent';
-    title.style.width = '200px';  // 给定合适的宽度
+    title.style.flex = '1';  // 修改为flex布局
+    title.style.minWidth = '100px';  // 添加最小宽度
     title.style.padding = '4px 0';
 
     // 操作按钮容器
@@ -166,7 +169,10 @@ function createStepElement(step, index) {
     element.style.marginTop = '8px';
     element.style.backgroundColor = '#f5f5f5';
     element.style.borderRadius = '6px';
-    element.style.position = 'relative'; // 添加相对定位
+    element.style.position = 'relative';
+    element.style.width = '100%';  // 添加宽度100%
+    element.style.boxSizing = 'border-box';  // 添加盒模型
+    element.style.minWidth = '250px';  // 添加最小宽度
 
     // 创建进度条
     const progressBar = document.createElement('div');

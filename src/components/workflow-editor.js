@@ -29,9 +29,10 @@ export function createWorkflowEditor(workflow, onSave, isNew = false) {
     editor.style.borderRadius = '8px';
     editor.style.padding = '16px';
     editor.style.width = '90%';
-    editor.style.maxWidth = '600px';
+    editor.style.maxWidth = '90%';
+    editor.style.minWidth = '280px';
     editor.style.height = '90%';
-    editor.style.maxHeight = '800px';
+    editor.style.maxHeight = '90%';
     editor.style.display = 'flex';
     editor.style.flexDirection = 'column';
     editor.style.position = 'relative';
@@ -339,7 +340,11 @@ function createStepNode(step, index) {
     node.style.padding = '12px';
     node.style.boxShadow = '0 2px 4px rgba(0, 0, 0, 0.1)';
     node.style.width = '100%';
+    node.style.minWidth = '250px';
     node.style.boxSizing = 'border-box';
+    node.style.display = 'flex';
+    node.style.flexDirection = 'column';
+    node.style.gap = '8px';
 
     // URL输入框
     const urlInput = document.createElement('input');
