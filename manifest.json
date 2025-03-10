@@ -18,6 +18,9 @@
     "sidePanel",
     "scripting"
   ],
+  "host_permissions": [
+    "<all_urls>"
+  ],
   "side_panel": {
     "default_path": "src/sidebar/index.html"
   },

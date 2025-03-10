@@ -49,8 +49,27 @@ export function createWorkflowEditor(workflow, onSave, isNew = false) {
     titleInput.style.padding = '8px';
     titleInput.style.border = '1px solid #ddd';
     titleInput.style.borderRadius = '4px';
-    titleInput.style.marginBottom = '16px';
+    titleInput.style.marginBottom = '12px';
     titleInput.style.boxSizing = 'border-box';
+
+    // 创建描述输入框
+    const descriptionInput = document.createElement('input');
+    descriptionInput.type = 'text';
+    descriptionInput.value = workflow.description || '';
+    descriptionInput.placeholder = '输入工作流描述';
+    descriptionInput.style.width = '100%';
+    descriptionInput.style.fontSize = '14px';
+    descriptionInput.style.padding = '8px';
+    descriptionInput.style.border = '1px solid #ddd';
+    descriptionInput.style.borderRadius = '4px';
+    descriptionInput.style.marginBottom = '16px';
+    descriptionInput.style.boxSizing = 'border-box';
+    descriptionInput.style.color = '#666';
+
+    // 添加描述输入事件
+    descriptionInput.addEventListener('input', (e) => {
+        workflow.description = e.target.value;
+    });
 
     // 创建颜色选择器容器
     const colorContainer = document.createElement('div');
@@ -295,6 +314,7 @@ export function createWorkflowEditor(workflow, onSave, isNew = false) {
     flowchart.appendChild(addStepBtn);
 
     editor.appendChild(titleInput);
+    editor.appendChild(descriptionInput);
     editor.appendChild(colorContainer);
     editor.appendChild(flowchart);
     editor.appendChild(actions);
@@ -321,19 +341,6 @@ function createStepNode(step, index) {
     node.style.width = '100%';
     node.style.boxSizing = 'border-box';
 
-    // 步骤标题输入框
-    const titleInput = document.createElement('input');
-    titleInput.type = 'text';
-    titleInput.value = step.title;
-    titleInput.placeholder = '步骤标题';
-    titleInput.style.width = '100%';
-    titleInput.style.marginBottom = '8px';
-    titleInput.style.padding = '4px 8px';
-    titleInput.style.border = '1px solid #ddd';
-    titleInput.style.borderRadius = '4px';
-    titleInput.style.fontSize = '14px';
-    titleInput.style.boxSizing = 'border-box';
-
     // URL输入框
     const urlInput = document.createElement('input');
     urlInput.type = 'url';
@@ -346,6 +353,74 @@ function createStepNode(step, index) {
     urlInput.style.borderRadius = '4px';
     urlInput.style.fontSize = '14px';
     urlInput.style.boxSizing = 'border-box';
+
+    // 步骤标题输入框
+    const titleContainer = document.createElement('div');
+    titleContainer.style.display = 'flex';
+    titleContainer.style.alignItems = 'center';
+    titleContainer.style.gap = '8px';
+    titleContainer.style.width = '100%';
+    titleContainer.style.marginBottom = '8px';
+
+    // 网站图标
+    const favicon = document.createElement('img');
+    favicon.style.width = '24px';
+    favicon.style.height = '24px';
+    favicon.style.flexShrink = '0';
+    favicon.style.objectFit = 'contain';
+    favicon.style.display = 'block';
+    favicon.style.border = '1px solid #E5E5EA';
+    favicon.style.borderRadius = '4px';
+    favicon.style.padding = '2px';
+    favicon.style.backgroundColor = '#fff';
+
+    // 设置默认图标
+    const defaultIcon = 'data:image/svg+xml,' + encodeURIComponent(`
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <rect width="24" height="24" rx="4" fill="#E5E5EA"/>
+            <path d="M6 12h12M12 6v12" stroke="#8E8E93" stroke-width="2" stroke-linecap="round"/>
+        </svg>
+    `);
+    
+    // 如果已经有保存的图标，直接使用
+    if (step.favicon) {
+        favicon.src = step.favicon;
+    } else {
+        favicon.src = defaultIcon;
+    }
+
+    // 添加图片加载错误处理
+    favicon.onerror = () => {
+        favicon.src = defaultIcon;
+        step.favicon = defaultIcon;
+    };
+
+    // 如果已经有URL但没有图标，尝试获取图标
+    if (step.url && step.url.startsWith('http') && !step.favicon) {
+        chrome.runtime.sendMessage(
+            { type: 'GET_WEBSITE_INFO', url: step.url },
+            (response) => {
+                if (response && response.favicon) {
+                    favicon.src = response.favicon;
+                    step.favicon = response.favicon;
+                }
+            }
+        );
+    }
+    
+    const titleInput = document.createElement('input');
+    titleInput.type = 'text';
+    titleInput.value = step.title;
+    titleInput.placeholder = '步骤标题';
+    titleInput.style.flex = '1';
+    titleInput.style.padding = '4px 8px';
+    titleInput.style.border = '1px solid #ddd';
+    titleInput.style.borderRadius = '4px';
+    titleInput.style.fontSize = '14px';
+    titleInput.style.boxSizing = 'border-box';
+
+    titleContainer.appendChild(favicon);
+    titleContainer.appendChild(titleInput);
 
     // 备注输入框
     const memoInput = document.createElement('input');
@@ -361,20 +436,55 @@ function createStepNode(step, index) {
     memoInput.style.color = '#666';
 
     // 添加输入事件
-    titleInput.addEventListener('input', (e) => {
-        step.title = e.target.value;
-    });
-
+    let urlInputTimeout;
     urlInput.addEventListener('input', (e) => {
         step.url = e.target.value;
+        
+        // 清除之前的定时器
+        clearTimeout(urlInputTimeout);
+        
+        // 设置新的定时器，延迟500ms后获取网站信息
+        urlInputTimeout = setTimeout(async () => {
+            const url = e.target.value;
+            if (url && url.startsWith('http')) {
+                try {
+                    // 发送消息给background获取网站信息
+                    chrome.runtime.sendMessage(
+                        { type: 'GET_WEBSITE_INFO', url: url },
+                        (response) => {
+                            if (response) {
+                                if (response.title) {
+                                    titleInput.value = response.title;
+                                    step.title = response.title;
+                                }
+                                if (response.favicon) {
+                                    favicon.src = response.favicon;
+                                    step.favicon = response.favicon;
+                                }
+                            }
+                        }
+                    );
+                } catch (error) {
+                    console.error('获取网站信息失败:', error);
+                }
+            } else {
+                // 如果URL为空或无效，显示默认图标
+                favicon.src = defaultIcon;
+                step.favicon = defaultIcon;
+            }
+        }, 500);
+    });
+
+    titleInput.addEventListener('input', (e) => {
+        step.title = e.target.value;
     });
 
     memoInput.addEventListener('input', (e) => {
         step.memo = e.target.value;
     });
 
-    node.appendChild(titleInput);
     node.appendChild(urlInput);
+    node.appendChild(titleContainer);
     node.appendChild(memoInput);
 
     return node;
@@ -387,11 +497,18 @@ function createStepNode(step, index) {
 function createArrow() {
     const arrow = document.createElement('div');
     arrow.className = 'workflow-arrow';
+    arrow.style.display = 'flex';
+    arrow.style.justifyContent = 'center';
+    arrow.style.alignItems = 'center';
+    arrow.style.margin = '4px 0';
+    arrow.style.height = '32px';
+    
+    // 创建SVG箭头
     arrow.innerHTML = `
-        <svg width="24" height="24" viewBox="0 0 24 24">
-            <path d="M12 4l-1.41 1.41L16.17 11H4v2h12.17l-5.58 5.59L12 20l8-8z"/>
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#666" stroke-width="2">
+            <path d="M12 4L12 16M12 16L7 11M12 16L17 11" stroke-linecap="round" stroke-linejoin="round"/>
         </svg>
     `;
-    arrow.style.margin = '8px 0';
+
     return arrow;
 } 

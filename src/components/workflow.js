@@ -166,13 +166,42 @@ function createStepElement(step, index) {
     element.style.marginTop = '8px';
     element.style.backgroundColor = '#f5f5f5';
     element.style.borderRadius = '6px';
+    element.style.position = 'relative'; // 添加相对定位
+
+    // 创建进度条
+    const progressBar = document.createElement('div');
+    progressBar.className = 'progress-bar';
+    progressBar.style.position = 'absolute';
+    progressBar.style.right = '0';
+    progressBar.style.top = '0';
+    progressBar.style.bottom = '0';
+    progressBar.style.width = '4px';
+    progressBar.style.backgroundColor = '#eee';
+    progressBar.style.borderRadius = '0 6px 6px 0';
+    progressBar.style.overflow = 'hidden';
+
+    // 创建进度条填充
+    const progressFill = document.createElement('div');
+    progressFill.className = 'progress-fill';
+    progressFill.style.width = '100%';
+    progressFill.style.height = '0%';
+    progressFill.style.backgroundColor = '#34C759';
+    progressFill.style.transition = 'height 0.3s ease';
+    progressFill.style.position = 'absolute';
+    progressFill.style.bottom = '0';
+    progressFill.style.left = '0';
+
+    progressBar.appendChild(progressFill);
+    element.appendChild(progressBar);
 
     // 创建主要内容容器
     const mainContent = document.createElement('div');
     mainContent.style.display = 'flex';
     mainContent.style.alignItems = 'center';
     mainContent.style.width = '100%';
-    mainContent.style.cursor = 'pointer'; // 添加指针样式
+    mainContent.style.cursor = 'pointer';
+    mainContent.style.position = 'relative';
+    mainContent.style.zIndex = '1';
 
     // 步骤序号
     const number = document.createElement('span');
@@ -193,10 +222,52 @@ function createStepElement(step, index) {
     // 步骤内容
     const content = document.createElement('div');
     content.style.flex = '1';
+    content.style.display = 'flex';
+    content.style.flexDirection = 'column';
+    content.style.gap = '4px';
+
+    // 标题行容器
+    const titleRow = document.createElement('div');
+    titleRow.style.display = 'flex';
+    titleRow.style.alignItems = 'center';
+    titleRow.style.gap = '8px';
+
+    // 网站图标
+    const favicon = document.createElement('img');
+    favicon.style.width = '24px';
+    favicon.style.height = '24px';
+    favicon.style.flexShrink = '0';
+    favicon.style.objectFit = 'contain';
+    favicon.style.display = 'block';
+    favicon.style.border = '1px solid #E5E5EA';
+    favicon.style.borderRadius = '4px';
+    favicon.style.padding = '2px';
+    favicon.style.backgroundColor = '#fff';
+
+    // 设置默认图标
+    const defaultIcon = 'data:image/svg+xml,' + encodeURIComponent(`
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <rect width="24" height="24" rx="4" fill="#E5E5EA"/>
+            <path d="M6 12h12M12 6v12" stroke="#8E8E93" stroke-width="2" stroke-linecap="round"/>
+        </svg>
+    `);
+    
+    // 如果已经有保存的图标，直接使用
+    if (step.favicon) {
+        favicon.src = step.favicon;
+    } else {
+        favicon.src = defaultIcon;
+    }
+
+    // 添加图片加载错误处理
+    favicon.onerror = () => {
+        favicon.src = defaultIcon;
+    };
 
     const title = document.createElement('div');
     title.textContent = step.title;
     title.style.fontWeight = '500';
+    title.style.flex = '1';
 
     const url = document.createElement('div');
     const displayUrl = step.url ? (() => {
@@ -210,6 +281,26 @@ function createStepElement(step, index) {
     url.textContent = displayUrl;
     url.style.fontSize = '12px';
     url.style.color = '#666';
+    url.style.paddingLeft = '32px';  // 与图标对齐的缩进
+
+    titleRow.appendChild(favicon);
+    titleRow.appendChild(title);
+    
+    content.appendChild(titleRow);
+    content.appendChild(url);
+
+    // 添加点击事件到整个内容区域（不包括箭头按钮）
+    mainContent.addEventListener('click', (e) => {
+        // 如果点击的是toggleButton，不执行跳转
+        if (e.target.closest('.toggle-button')) {
+            return;
+        }
+        if (step.url) {
+            // 点击时显示进度条动画
+            progressFill.style.height = '100%';
+            chrome.tabs.create({ url: step.url });
+        }
+    });
 
     // 添加下拉箭头
     const toggleButton = document.createElement('button');
@@ -234,18 +325,39 @@ function createStepElement(step, index) {
     memoContainer.style.borderTop = '1px solid #ddd';
     memoContainer.style.color = '#666';
     memoContainer.style.fontSize = '12px';
-    memoContainer.textContent = step.memo || '暂无备注';
-
-    // 添加点击事件到整个内容区域（不包括箭头按钮）
-    mainContent.addEventListener('click', (e) => {
-        // 如果点击的是toggleButton，不执行跳转
-        if (e.target.closest('.toggle-button')) {
-            return;
-        }
-        if (step.url) {
-            chrome.tabs.create({ url: step.url });
+    
+    // 创建备注输入框
+    const memoInput = document.createElement('input');
+    memoInput.type = 'text';
+    memoInput.value = step.memo || '暂无备注';
+    memoInput.style.width = '100%';
+    memoInput.style.border = 'none';
+    memoInput.style.outline = 'none';
+    memoInput.style.backgroundColor = 'transparent';
+    memoInput.style.color = '#666';
+    memoInput.style.fontSize = '12px';
+    memoInput.style.padding = '0';
+    
+    // 添加输入事件
+    memoInput.addEventListener('input', async (e) => {
+        step.memo = e.target.value;
+        try {
+            await updateWorkflow(workflow);
+        } catch (error) {
+            console.error('更新备注失败：', error);
         }
     });
+    
+    // 添加焦点样式
+    memoInput.addEventListener('focus', () => {
+        memoInput.style.borderBottom = '1px solid #007AFF';
+    });
+    
+    memoInput.addEventListener('blur', () => {
+        memoInput.style.borderBottom = 'none';
+    });
+    
+    memoContainer.appendChild(memoInput);
 
     // 添加下拉箭头点击事件
     toggleButton.addEventListener('click', (e) => {
@@ -255,8 +367,6 @@ function createStepElement(step, index) {
         toggleButton.style.transform = isExpanded ? 'rotate(0deg)' : 'rotate(180deg)';
     });
 
-    content.appendChild(title);
-    content.appendChild(url);
     mainContent.appendChild(number);
     mainContent.appendChild(content);
     mainContent.appendChild(toggleButton);
