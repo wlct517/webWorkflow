@@ -13,7 +13,12 @@
             <div class="search-bar">
                 <input type="search" id="searchInput" placeholder="搜索工作流...">
                 <button id="settingsBtn" class="settings-button">
-                    <span style="font-weight: 600; font-size: 14px;">AI</span>
+                    <span style="font-weight: 600; font-size: 14px; color: #999999;">AI</span>
+                </button>
+                <button id="filterBtn" class="filter-button" title="颜色筛选">
+                    <svg width="16" height="16" viewBox="0 0 16 16" fill="#999999">
+                        <path d="M1.5 1.5A.5.5 0 0 1 2 1h12a.5.5 0 0 1 .5.5v2a.5.5 0 0 1-.128.334L10 8.692V13.5a.5.5 0 0 1-.342.474l-3 1A.5.5 0 0 1 6 14.5V8.692L1.628 3.834A.5.5 0 0 1 1.5 3.5v-2z"/>
+                    </svg>
                 </button>
             </div>
         </header>
@@ -37,16 +42,16 @@
                 <div class="footer-actions">
                     <button id="importBtn" class="secondary-button" aria-label="导入">
                         <svg width="20" height="20" viewBox="0 0 20 20">
-                            <path d="M10 2a.5.5 0 0 1 .5.5v8.793l3.146-3.147a.5.5 0 0 1 .708.708l-4 4a.5.5 0 0 1-.708 0l-4-4a.5.5 0 1 1 .708-.708L9.5 11.293V2.5A.5.5 0 0 1 10 2Z"/>
-                            <path d="M3 13.5a.5.5 0 0 1 .5-.5h13a.5.5 0 0 1 0 1h-13a.5.5 0 0 1-.5-.5Z"/>
+                            <path d="M10 3a.5.5 0 0 1 .5.5v8.793l3.146-3.147a.5.5 0 0 1 .708.708l-4 4a.5.5 0 0 1-.708 0l-4-4a.5.5 0 1 1 .708-.708L9.5 12.293V3.5A.5.5 0 0 1 10 3Z"/>
+                            <path d="M3 14.5a.5.5 0 0 1 .5-.5h13a.5.5 0 0 1 0 1h-13a.5.5 0 0 1-.5-.5Z"/>
                         </svg>
                         导入
                     </button>
                     <div class="export-dropdown">
                         <button id="exportBtn" class="secondary-button" aria-label="导出">
                             <svg width="20" height="20" viewBox="0 0 20 20">
-                                <path d="M10 18a.5.5 0 0 1-.5-.5V8.707L6.354 11.854a.5.5 0 1 1-.708-.708l4-4a.5.5 0 0 1 .708 0l4 4a.5.5 0 0 1-.708.708L10.5 8.707v8.793a.5.5 0 0 1-.5.5Z"/>
-                                <path d="M3 6.5a.5.5 0 0 1 .5-.5h13a.5.5 0 0 1 0 1h-13a.5.5 0 0 1-.5-.5Z"/>
+                                <path d="M10 17a.5.5 0 0 1-.5-.5V7.707L6.354 10.854a.5.5 0 1 1-.708-.708l4-4a.5.5 0 0 1 .708 0l4 4a.5.5 0 0 1-.708.708L10.5 7.707v8.793a.5.5 0 0 1-.5.5Z"/>
+                                <path d="M3 5.5a.5.5 0 0 1 .5-.5h13a.5.5 0 0 1 0 1h-13a.5.5 0 0 1-.5-.5Z"/>
                             </svg>
                             导出
                         </button>
@@ -59,6 +64,7 @@
                         <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
                             <path fill-rule="evenodd" d="M11.49 3.17c-.38-1.56-2.6-1.56-2.98 0a1.532 1.532 0 01-2.286.948c-1.372-.836-2.942.734-2.106 2.106.54.886.061 2.042-.947 2.287-1.561.379-1.561 2.6 0 2.978a1.532 1.532 0 01.947 2.287c-.836 1.372.734 2.942 2.106 2.106a1.532 1.532 0 012.287.947c.379 1.561 2.6 1.561 2.978 0a1.533 1.533 0 012.287-.947c1.372.836 2.942-.734 2.106-2.106a1.533 1.533 0 01.947-2.287c1.561-.379 1.561-2.6 0-2.978a1.532 1.532 0 01-.947-2.287c.836-1.372-.734-2.942-2.106-2.106a1.532 1.532 0 01-2.287-.947zM10 13a3 3 0 100-6 3 3 0 000 6z"/>
                         </svg>
+                        设置
                     </button>
                 </div>
             </div>

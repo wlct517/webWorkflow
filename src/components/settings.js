@@ -51,7 +51,7 @@ export function createSettingsModal() {
     getApiKeyLink.style.textDecoration = 'none';
     getApiKeyLink.style.fontSize = '12px';
     getApiKeyLink.style.whiteSpace = 'nowrap';
-    getApiKeyLink.textContent = '获取 API Key';
+    getApiKeyLink.textContent = '获取千问 API Key';
 
     apiKeyLabelContainer.appendChild(apiKeyLabel);
     apiKeyLabelContainer.appendChild(getApiKeyLink);

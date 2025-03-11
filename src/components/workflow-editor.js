@@ -8,6 +8,9 @@ import { updateWorkflow, addWorkflow } from '../utils/db.js';
  * @returns {HTMLElement}
  */
 export function createWorkflowEditor(workflow, onSave, isNew = false) {
+    // 创建工作流数据的深拷贝
+    const workflowCopy = JSON.parse(JSON.stringify(workflow));
+    
     // 创建模态框容器
     const modal = document.createElement('div');
     modal.className = 'workflow-editor-modal';
@@ -42,7 +45,7 @@ export function createWorkflowEditor(workflow, onSave, isNew = false) {
     // 创建标题输入框
     const titleInput = document.createElement('input');
     titleInput.type = 'text';
-    titleInput.value = workflow.name;
+    titleInput.value = workflowCopy.name;
     titleInput.placeholder = '输入工作流名称';
     titleInput.style.width = '100%';
     titleInput.style.fontSize = '18px';
@@ -56,7 +59,7 @@ export function createWorkflowEditor(workflow, onSave, isNew = false) {
     // 创建描述输入框
     const descriptionInput = document.createElement('input');
     descriptionInput.type = 'text';
-    descriptionInput.value = workflow.description || '';
+    descriptionInput.value = workflowCopy.description || '';
     descriptionInput.placeholder = '输入工作流描述';
     descriptionInput.style.width = '100%';
     descriptionInput.style.fontSize = '14px';
@@ -69,7 +72,7 @@ export function createWorkflowEditor(workflow, onSave, isNew = false) {
 
     // 添加描述输入事件
     descriptionInput.addEventListener('input', (e) => {
-        workflow.description = e.target.value;
+        workflowCopy.description = e.target.value;
     });
 
     // 创建颜色选择器容器
@@ -124,7 +127,7 @@ export function createWorkflowEditor(workflow, onSave, isNew = false) {
         button.style.justifyContent = 'center';
 
         // 创建选中状态的对勾
-        if (workflow.color === color.value) {
+        if (workflowCopy.color === color.value) {
             const checkmark = document.createElement('div');
             checkmark.innerHTML = `
                 <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3">
@@ -144,9 +147,9 @@ export function createWorkflowEditor(workflow, onSave, isNew = false) {
 
         button.addEventListener('click', () => {
             // 如果当前颜色已经被选中，则取消选择
-            if (workflow.color === color.value) {
+            if (workflowCopy.color === color.value) {
                 button.innerHTML = '';
-                workflow.color = '';
+                workflowCopy.color = '';
                 return;
             }
             
@@ -165,7 +168,7 @@ export function createWorkflowEditor(workflow, onSave, isNew = false) {
             button.appendChild(checkmark);
             
             // 更新工作流颜色
-            workflow.color = color.value;
+            workflowCopy.color = color.value;
         });
 
         colorButtons.appendChild(button);
@@ -177,7 +180,7 @@ export function createWorkflowEditor(workflow, onSave, isNew = false) {
 
     // 标题输入事件
     titleInput.addEventListener('input', (e) => {
-        workflow.name = e.target.value;
+        workflowCopy.name = e.target.value;
     });
 
     // 创建流程图容器
@@ -201,12 +204,13 @@ export function createWorkflowEditor(workflow, onSave, isNew = false) {
     stepsList.style.alignItems = 'stretch';
     stepsList.style.width = '100%';
     stepsList.style.boxSizing = 'border-box';
+    stepsList.workflow = workflowCopy;  // 添加workflow引用
 
     // 添加现有步骤
-    workflow.steps.forEach((step, index) => {
-        const stepNode = createStepNode(step, index);
+    workflowCopy.steps.forEach((step, index) => {
+        const stepNode = createStepNode(step, index, workflowCopy, stepsList);
         stepsList.appendChild(stepNode);
-        if (index < workflow.steps.length - 1) {
+        if (index < workflowCopy.steps.length - 1) {
             const arrow = createArrow();
             stepsList.appendChild(arrow);
         }
@@ -216,21 +220,22 @@ export function createWorkflowEditor(workflow, onSave, isNew = false) {
     const addStepBtn = document.createElement('button');
     addStepBtn.className = 'add-step-button';
     addStepBtn.innerHTML = `
-        <svg width="24" height="24" viewBox="0 0 24 24">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
             <path d="M12 4a.5.5 0 0 1 .5.5V11h6.5a.5.5 0 0 1 0 1H12.5v6.5a.5.5 0 0 1-1 0V12H5a.5.5 0 0 1 0-1h6.5V4.5A.5.5 0 0 1 12 4Z"/>
         </svg>
-        添加步骤
     `;
-    addStepBtn.style.padding = '8px 16px';
+    addStepBtn.style.padding = '8px';
     addStepBtn.style.backgroundColor = '#007AFF';
     addStepBtn.style.color = 'white';
     addStepBtn.style.border = 'none';
-    addStepBtn.style.borderRadius = '4px';
+    addStepBtn.style.borderRadius = '50%';
     addStepBtn.style.cursor = 'pointer';
     addStepBtn.style.display = 'flex';
     addStepBtn.style.alignItems = 'center';
-    addStepBtn.style.gap = '8px';
+    addStepBtn.style.justifyContent = 'center';
     addStepBtn.style.margin = '20px auto';
+    addStepBtn.style.width = '40px';
+    addStepBtn.style.height = '40px';
 
     // 添加步骤事件
     addStepBtn.addEventListener('click', () => {
@@ -241,14 +246,14 @@ export function createWorkflowEditor(workflow, onSave, isNew = false) {
             description: ''
         };
         
-        if (workflow.steps.length > 0) {
+        if (workflowCopy.steps.length > 0) {
             const arrow = createArrow();
             stepsList.appendChild(arrow);
         }
         
-        const stepNode = createStepNode(newStep, workflow.steps.length);
+        const stepNode = createStepNode(newStep, workflowCopy.steps.length, workflowCopy, stepsList);
         stepsList.appendChild(stepNode);
-        workflow.steps.push(newStep);
+        workflowCopy.steps.push(newStep);
     });
 
     // 创建底部按钮组
@@ -257,6 +262,8 @@ export function createWorkflowEditor(workflow, onSave, isNew = false) {
     actions.style.justifyContent = 'center';
     actions.style.gap = '12px';
     actions.style.marginTop = '20px';
+    actions.style.width = '100%';
+    actions.style.padding = '0 16px';
 
     // 取消按钮
     const cancelBtn = document.createElement('button');
@@ -267,7 +274,8 @@ export function createWorkflowEditor(workflow, onSave, isNew = false) {
     cancelBtn.style.borderRadius = '4px';
     cancelBtn.style.backgroundColor = 'white';
     cancelBtn.style.cursor = 'pointer';
-    cancelBtn.style.width = '120px';
+    cancelBtn.style.flex = '1';
+    cancelBtn.style.fontWeight = '500';
     cancelBtn.style.display = 'flex';
     cancelBtn.style.alignItems = 'center';
     cancelBtn.style.justifyContent = 'center';
@@ -282,7 +290,8 @@ export function createWorkflowEditor(workflow, onSave, isNew = false) {
     saveBtn.style.border = 'none';
     saveBtn.style.borderRadius = '4px';
     saveBtn.style.cursor = 'pointer';
-    saveBtn.style.width = '120px';
+    saveBtn.style.flex = '1';
+    saveBtn.style.fontWeight = '500';
     saveBtn.style.display = 'flex';
     saveBtn.style.alignItems = 'center';
     saveBtn.style.justifyContent = 'center';
@@ -296,11 +305,11 @@ export function createWorkflowEditor(workflow, onSave, isNew = false) {
         try {
             // 根据是否为新建工作流选择不同的保存方法
             if (isNew) {
-                await addWorkflow(workflow);
+                await addWorkflow(workflowCopy);
             } else {
-                await updateWorkflow(workflow);
+                await updateWorkflow(workflowCopy);
             }
-            onSave(workflow);
+            onSave(workflowCopy);
             modal.remove();
         } catch (error) {
             alert('保存失败：' + error.message);
@@ -330,9 +339,11 @@ export function createWorkflowEditor(workflow, onSave, isNew = false) {
  * 创建步骤节点
  * @param {Object} step - 步骤对象
  * @param {number} index - 步骤索引
+ * @param {Object} workflow - 工作流对象
+ * @param {HTMLElement} stepsList - 步骤列表容器
  * @returns {HTMLElement}
  */
-function createStepNode(step, index) {
+function createStepNode(step, index, workflow, stepsList) {
     const node = document.createElement('div');
     node.className = 'workflow-step-node';
     node.style.backgroundColor = 'white';
@@ -345,6 +356,7 @@ function createStepNode(step, index) {
     node.style.display = 'flex';
     node.style.flexDirection = 'column';
     node.style.gap = '8px';
+    node.style.position = 'relative';
 
     // URL输入框
     const urlInput = document.createElement('input');
@@ -488,9 +500,137 @@ function createStepNode(step, index) {
         step.memo = e.target.value;
     });
 
+    // 创建底部工具栏
+    const bottomToolbar = document.createElement('div');
+    bottomToolbar.style.display = 'flex';
+    bottomToolbar.style.justifyContent = 'space-between';
+    bottomToolbar.style.alignItems = 'center';
+    bottomToolbar.style.gap = '8px';
+    bottomToolbar.style.marginTop = '8px';
+
+    // 创建左侧序号容器
+    const orderContainer = document.createElement('div');
+    orderContainer.style.display = 'flex';
+    orderContainer.style.alignItems = 'center';
+    orderContainer.style.gap = '4px';
+
+    // 创建右侧按钮容器
+    const buttonsContainer = document.createElement('div');
+    buttonsContainer.style.display = 'flex';
+    buttonsContainer.style.alignItems = 'center';
+    buttonsContainer.style.gap = '8px';
+
+    // 序号输入框
+    const orderInput = document.createElement('input');
+    orderInput.type = 'number';
+    orderInput.value = index + 1;
+    orderInput.min = 1;
+    orderInput.style.width = '50px';
+    orderInput.style.padding = '4px';
+    orderInput.style.border = '1px solid #ddd';
+    orderInput.style.borderRadius = '4px';
+    orderInput.style.fontSize = '12px';
+    orderInput.style.textAlign = 'left';
+
+    // 序号标签
+    const orderLabel = document.createElement('span');
+    orderLabel.textContent = '序号';
+    orderLabel.style.fontSize = '12px';
+    orderLabel.style.color = '#666';
+
+    // 删除按钮
+    const deleteBtn = document.createElement('button');
+    deleteBtn.innerHTML = '×';
+    deleteBtn.style.backgroundColor = 'transparent';
+    deleteBtn.style.border = 'none';
+    deleteBtn.style.color = '#666';
+    deleteBtn.style.fontSize = '16px';
+    deleteBtn.style.cursor = 'pointer';
+    deleteBtn.style.padding = '4px 8px';
+    deleteBtn.style.display = 'flex';
+    deleteBtn.style.alignItems = 'center';
+    deleteBtn.style.justifyContent = 'center';
+    deleteBtn.style.borderRadius = '4px';
+    deleteBtn.title = '删除此步骤';
+
+    // 添加删除按钮悬停效果
+    deleteBtn.addEventListener('mouseover', () => {
+        deleteBtn.style.backgroundColor = '#f5f5f5';
+        deleteBtn.style.color = '#ff3b30';
+    });
+
+    deleteBtn.addEventListener('mouseout', () => {
+        deleteBtn.style.backgroundColor = 'transparent';
+        deleteBtn.style.color = '#666';
+    });
+
+    // 添加序号输入事件
+    orderInput.addEventListener('change', () => {
+        const newIndex = parseInt(orderInput.value) - 1;
+        const currentIndex = Array.from(stepsList.children).indexOf(node) / 2; // 因为有箭头，所以除以2
+        
+        if (newIndex !== currentIndex && newIndex >= 0 && newIndex < workflow.steps.length) {
+            // 更新workflow.steps数组
+            const step = workflow.steps.splice(currentIndex, 1)[0];
+            workflow.steps.splice(newIndex, 0, step);
+            
+            // 重新渲染所有步骤
+            while (stepsList.firstChild) {
+                stepsList.firstChild.remove();
+            }
+            
+            workflow.steps.forEach((step, idx) => {
+                const stepNode = createStepNode(step, idx, workflow, stepsList);
+                stepsList.appendChild(stepNode);
+                if (idx < workflow.steps.length - 1) {
+                    const arrow = createArrow();
+                    stepsList.appendChild(arrow);
+                }
+            });
+        }
+    });
+
+    // 添加删除事件
+    deleteBtn.addEventListener('click', () => {
+        if (confirm('确定要删除这个步骤吗？')) {
+            const currentIndex = Array.from(stepsList.children).indexOf(node) / 2;
+            workflow.steps.splice(currentIndex, 1);
+            
+            // 如果不是最后一个节点，也要删除后面的箭头
+            const nextArrow = node.nextElementSibling;
+            if (nextArrow && nextArrow.className === 'workflow-arrow') {
+                nextArrow.remove();
+            }
+            // 如果是最后一个节点，要删除前面的箭头
+            else if (node.previousElementSibling && node.previousElementSibling.className === 'workflow-arrow') {
+                node.previousElementSibling.remove();
+            }
+            
+            node.remove();
+            
+            // 更新剩余节点的序号
+            const remainingNodes = stepsList.querySelectorAll('.workflow-step-node');
+            remainingNodes.forEach((node, idx) => {
+                const orderInput = node.querySelector('input[type="number"]');
+                if (orderInput) {
+                    orderInput.value = idx + 1;
+                }
+            });
+        }
+    });
+
+    // 重新组织底部工具栏的结构
+    orderContainer.appendChild(orderLabel);
+    orderContainer.appendChild(orderInput);
+    buttonsContainer.appendChild(deleteBtn);  // 添加删除按钮到右侧容器
+    bottomToolbar.appendChild(orderContainer);
+    bottomToolbar.appendChild(buttonsContainer);
+
+    // 组装节点
     node.appendChild(urlInput);
     node.appendChild(titleContainer);
     node.appendChild(memoInput);
+    node.appendChild(bottomToolbar);
 
     return node;
 }
@@ -503,17 +643,114 @@ function createArrow() {
     const arrow = document.createElement('div');
     arrow.className = 'workflow-arrow';
     arrow.style.display = 'flex';
+    arrow.style.flexDirection = 'column';
     arrow.style.justifyContent = 'center';
     arrow.style.alignItems = 'center';
     arrow.style.margin = '4px 0';
-    arrow.style.height = '32px';
+    arrow.style.minHeight = '40px';
+    arrow.style.position = 'relative';
     
-    // 创建SVG箭头
-    arrow.innerHTML = `
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#666" stroke-width="2">
-            <path d="M12 4L12 16M12 16L7 11M12 16L17 11" stroke-linecap="round" stroke-linejoin="round"/>
+    // 创建上半部分的竖线
+    const topLine = document.createElement('div');
+    topLine.style.width = '1px';
+    topLine.style.flex = '1';
+    topLine.style.backgroundColor = '#999';
+    
+    // 创建加号按钮
+    const addButton = document.createElement('div');
+    addButton.style.width = '20px';
+    addButton.style.height = '20px';
+    addButton.style.display = 'flex';
+    addButton.style.alignItems = 'center';
+    addButton.style.justifyContent = 'center';
+    addButton.style.cursor = 'pointer';
+    addButton.style.margin = '2px 0';
+    addButton.style.color = '#999';
+    addButton.style.fontSize = '20px';
+    addButton.innerHTML = '+';
+    
+    // 创建下半部分的竖线容器
+    const bottomContainer = document.createElement('div');
+    bottomContainer.style.display = 'flex';
+    bottomContainer.style.flexDirection = 'column';
+    bottomContainer.style.flex = '1';
+    bottomContainer.style.alignItems = 'center';
+    
+    // 创建下半部分的竖线
+    const bottomLine = document.createElement('div');
+    bottomLine.style.width = '1px';
+    bottomLine.style.flex = '1';
+    bottomLine.style.backgroundColor = '#999';
+    
+    // 创建箭头
+    const arrowIcon = document.createElement('div');
+    arrowIcon.innerHTML = `
+        <svg width="16" height="8" viewBox="0 0 16 8" fill="none">
+            <path d="M8 8L0 0L16 0L8 8Z" fill="#999"/>
         </svg>
     `;
+    
+    // 组装底部容器
+    bottomContainer.appendChild(bottomLine);
+    bottomContainer.appendChild(arrowIcon);
+    
+    // 组装箭头组件
+    arrow.appendChild(topLine);
+    arrow.appendChild(addButton);
+    arrow.appendChild(bottomContainer);
+    
+    // 修改hover效果
+    addButton.addEventListener('mouseover', () => {
+        addButton.style.color = '#666';
+        topLine.style.backgroundColor = '#666';
+        bottomLine.style.backgroundColor = '#666';
+        arrow.querySelector('path').setAttribute('fill', '#666');
+    });
+    
+    addButton.addEventListener('mouseout', () => {
+        addButton.style.color = '#999';
+        topLine.style.backgroundColor = '#999';
+        bottomLine.style.backgroundColor = '#999';
+        arrow.querySelector('path').setAttribute('fill', '#999');
+    });
+    
+    // 添加点击事件
+    addButton.addEventListener('click', () => {
+        const newStep = {
+            id: crypto.randomUUID(),
+            title: '新步骤',
+            url: '',
+            description: ''
+        };
+        
+        // 获取当前箭头的位置
+        const arrowIndex = Array.from(arrow.parentElement.children).indexOf(arrow);
+        const stepIndex = Math.floor(arrowIndex / 2);
+        
+        // 在当前位置插入新步骤
+        const stepsList = arrow.parentElement;
+        const workflow = stepsList.workflow;
+        workflow.steps.splice(stepIndex + 1, 0, newStep);
+        
+        // 创建新的步骤节点
+        const stepNode = createStepNode(newStep, stepIndex + 2, workflow, stepsList);
+        
+        // 创建新的箭头
+        const newArrow = createArrow();
+        
+        // 插入新节点和箭头
+        arrow.parentElement.insertBefore(stepNode, arrow.nextSibling);
+        arrow.parentElement.insertBefore(newArrow, stepNode.nextSibling);
+        
+        // 更新所有序号
+        const allSteps = stepsList.querySelectorAll('.workflow-step-node');
+        allSteps.forEach((node, idx) => {
+            const orderInput = node.querySelector('input[type="number"]');
+            if (orderInput) {
+                orderInput.value = idx + 1;
+            }
+        });
+    });
 
     return arrow;
 } 

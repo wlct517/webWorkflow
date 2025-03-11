@@ -6,8 +6,23 @@ import { createWorkflowEditor } from '../components/workflow-editor.js';
 import { showSettings } from '../components/settings.js';
 import { searchWithAI } from '../utils/ai-search.js';
 
+// 定义颜色选项
+const colors = [
+    { name: '默认', value: '' },
+    { name: '红色', value: '#FF3B30' },
+    { name: '橙色', value: '#FF9500' },
+    { name: '黄色', value: '#FFCC00' },
+    { name: '绿色', value: '#34C759' },
+    { name: '蓝色', value: '#007AFF' },
+    { name: '紫色', value: '#AF52DE' },
+    { name: '灰色', value: '#8E8E93' }
+];
+
+// 改为数组以支持多选
+let selectedColors = [];
+
 // 加载工作流列表
-async function loadWorkflows(searchTerm = '') {
+async function loadWorkflows(searchTerm = '', filterColors = []) {
     const workflows = await getAllWorkflows();
     
     // 获取工作流列表元素
@@ -18,6 +33,7 @@ async function loadWorkflows(searchTerm = '') {
     
     let filteredWorkflows = workflows;
     
+    // 应用搜索过滤
     if (searchTerm) {
         try {
             // 尝试使用AI搜索
@@ -31,18 +47,105 @@ async function loadWorkflows(searchTerm = '') {
             );
         }
     }
+
+    // 应用颜色过滤
+    if (filterColors.length > 0) {
+        filteredWorkflows = filteredWorkflows.filter(w => filterColors.includes(w.color));
+    }
     
     // 渲染工作流列表
     filteredWorkflows.forEach(workflow => {
         const element = createWorkflowElement(workflow);
         workflowList.appendChild(element);
     });
+
+    // 更新筛选按钮的状态
+    const filterBtn = document.getElementById('filterBtn');
+    if (filterColors.length > 0) {
+        filterBtn.style.backgroundColor = 'var(--hover-color)';
+    } else {
+        filterBtn.style.backgroundColor = 'transparent';
+    }
+}
+
+// 显示颜色筛选对话框
+function showColorFilterDialog() {
+    const dialog = document.createElement('div');
+    dialog.className = 'color-filter-dialog';
+
+    const content = document.createElement('div');
+    content.className = 'color-filter-content';
+
+    content.innerHTML = `
+        <h3>选择标签颜色（可多选）</h3>
+        <div class="color-options">
+            ${colors.map(color => `
+                <div class="color-option ${selectedColors.includes(color.value) ? 'selected' : ''}"
+                     style="background-color: ${color.value || '#FFFFFF'}; ${!color.value ? 'border: 2px dashed #ddd;' : ''}"
+                     title="${color.name}"
+                     data-color="${color.value}">
+                     ${selectedColors.includes(color.value) ? '<div class="checkmark"></div>' : ''}
+                </div>
+            `).join('')}
+        </div>
+        <div class="color-filter-actions">
+            <button class="secondary-button" id="clearFilter">清除筛选</button>
+            <button class="primary-button" id="applyFilter">应用</button>
+        </div>
+    `;
+
+    // 添加颜色选择事件
+    content.querySelectorAll('.color-option').forEach(option => {
+        option.addEventListener('click', () => {
+            const color = option.dataset.color;
+            const index = selectedColors.indexOf(color);
+            
+            if (index === -1) {
+                // 添加选中状态
+                selectedColors.push(color);
+                option.classList.add('selected');
+                const checkmark = document.createElement('div');
+                checkmark.className = 'checkmark';
+                option.appendChild(checkmark);
+            } else {
+                // 移除选中状态
+                selectedColors.splice(index, 1);
+                option.classList.remove('selected');
+                option.querySelector('.checkmark')?.remove();
+            }
+        });
+    });
+
+    // 添加清除筛选事件
+    content.querySelector('#clearFilter').addEventListener('click', () => {
+        selectedColors = [];
+        loadWorkflows(searchInput.value, []);
+        dialog.remove();
+    });
+
+    // 添加应用筛选事件
+    content.querySelector('#applyFilter').addEventListener('click', () => {
+        loadWorkflows(searchInput.value, selectedColors);
+        dialog.remove();
+    });
+
+    dialog.appendChild(content);
+
+    // 点击遮罩层关闭
+    dialog.addEventListener('click', (e) => {
+        if (e.target === dialog) {
+            dialog.remove();
+        }
+    });
+
+    document.body.appendChild(dialog);
 }
 
 // 初始化数据库
 initDB().then(() => {
     // DOM 元素
     const searchInput = document.getElementById('searchInput');
+    const filterBtn = document.getElementById('filterBtn');
     const workflowList = document.getElementById('workflowList');
     const newWorkflowBtn = document.getElementById('newWorkflowBtn');
     const importBtn = document.getElementById('importBtn');
@@ -93,7 +196,7 @@ initDB().then(() => {
     searchInput.addEventListener('input', (e) => {
         clearTimeout(searchTimeout);
         searchTimeout = setTimeout(() => {
-            loadWorkflows(e.target.value);
+            loadWorkflows(e.target.value, selectedColors);
         }, 300);
     });
 
@@ -194,6 +297,9 @@ initDB().then(() => {
         showMoreOptionsDialog();
     });
 
+    // 颜色筛选按钮点击事件
+    filterBtn.addEventListener('click', showColorFilterDialog);
+
     // 新建工作流
     newWorkflowBtn.addEventListener('click', createNewWorkflow);
 
@@ -235,13 +341,14 @@ function showMoreOptionsDialog() {
     expandAllBtn.style.width = '100%';
     expandAllBtn.textContent = '展开所有备注';
     expandAllBtn.addEventListener('click', () => {
-        const toggleButtons = document.querySelectorAll('.toggle-button');
+        const toggleButtons = document.querySelectorAll('.workflow-item .toggle-button');
         toggleButtons.forEach(btn => {
-            const memoContainer = btn.closest('.workflow-step').querySelector('.memo-container');
+            const memoContainer = btn.parentElement.nextElementSibling;
             if (memoContainer && memoContainer.style.display === 'none') {
                 btn.click();
             }
         });
+        dialog.remove();
     });
 
     // 批量删除选项
