@@ -38,6 +38,7 @@ export async function searchWithAI(query, workflows) {
                         content: `你是一个搜索助手，需要根据用户的搜索词在工作流列表中找到最相关的内容。
                         工作流数据：${JSON.stringify(context)}
                         请分析用户的搜索意图，返回最相关的工作流ID列表，按相关度从高到低排序。
+                        注意：返回的ID列表中不能包含重复的ID。
                         只返回ID数组，不要返回其他内容。例如：["id1", "id2", "id3"]`
                     },
                     {
@@ -53,7 +54,10 @@ export async function searchWithAI(query, workflows) {
         }
 
         const data = await response.json();
-        const relevantIds = JSON.parse(data.choices[0].message.content);
+        let relevantIds = JSON.parse(data.choices[0].message.content);
+        
+        // 确保ID不重复
+        relevantIds = [...new Set(relevantIds)];
 
         // 根据相关度排序返回工作流
         return relevantIds
@@ -62,10 +66,7 @@ export async function searchWithAI(query, workflows) {
 
     } catch (error) {
         console.error('AI搜索失败：', error);
-        // 如果AI搜索失败，回退到普通搜索
-        return workflows.filter(w => 
-            w.name.toLowerCase().includes(query.toLowerCase()) ||
-            w.description?.toLowerCase().includes(query.toLowerCase())
-        );
+        // 抛出错误，让调用方处理回退到普通搜索
+        throw error;
     }
 } 

@@ -68,6 +68,11 @@ async function loadWorkflows(searchTerm = '', filterColors = []) {
                 w.description?.toLowerCase().includes(searchTerm.toLowerCase())
             );
         }
+
+        // 去重：使用 Set 和 Map 来确保工作流的唯一性
+        filteredWorkflows = Array.from(
+            new Map(filteredWorkflows.map(workflow => [workflow.id, workflow])).values()
+        );
     }
 
     // 应用颜色过滤
