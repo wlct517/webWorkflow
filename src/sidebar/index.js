@@ -99,7 +99,14 @@ function showColorFilterDialog() {
     content.className = 'color-filter-content';
 
     content.innerHTML = `
-        <h3>选择标签颜色（可多选）</h3>
+        <div class="color-filter-header">
+            <h3>筛选标签颜色（可多选）</h3>
+            <button class="close-button">
+                <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
+                    <path d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"/>
+                </svg>
+            </button>
+        </div>
         <div class="color-options">
             ${colors.map(color => `
                 <div class="color-option ${selectedColors.includes(color.value) ? 'selected' : ''}"
@@ -148,6 +155,12 @@ function showColorFilterDialog() {
     // 添加应用筛选事件
     content.querySelector('#applyFilter').addEventListener('click', () => {
         loadWorkflows(searchInput.value, selectedColors);
+        dialog.remove();
+    });
+
+    // 添加关闭按钮事件
+    const closeButton = content.querySelector('.close-button');
+    closeButton.addEventListener('click', () => {
         dialog.remove();
     });
 
