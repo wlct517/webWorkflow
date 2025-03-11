@@ -371,6 +371,47 @@ function createStepNode(step, index, workflow, stepsList) {
     urlInput.style.fontSize = '14px';
     urlInput.style.boxSizing = 'border-box';
 
+    // 添加URL输入事件
+    urlInput.addEventListener('input', (e) => {
+        step.url = e.target.value;
+    });
+
+    // 修改URL失去焦点事件
+    urlInput.addEventListener('blur', async () => {
+        if (step.url && step.url.startsWith('http')) {
+            console.log('正在获取网站信息:', step.url);
+            try {
+                const response = await new Promise((resolve, reject) => {
+                    chrome.runtime.sendMessage(
+                        { type: 'GET_WEBSITE_INFO', url: step.url },
+                        (response) => {
+                            if (chrome.runtime.lastError) {
+                                reject(chrome.runtime.lastError);
+                            } else {
+                                resolve(response);
+                            }
+                        }
+                    );
+                });
+                
+                console.log('收到网站信息:', response);
+                
+                if (response.favicon) {
+                    favicon.src = response.favicon;
+                    step.favicon = response.favicon;
+                }
+                
+                if (response.title) {
+                    console.log('设置标题:', response.title);
+                    step.title = response.title;
+                    titleInput.value = response.title;
+                }
+            } catch (error) {
+                console.error('获取网站信息失败:', error);
+            }
+        }
+    });
+
     // 步骤标题输入框
     const titleContainer = document.createElement('div');
     titleContainer.style.display = 'flex';
@@ -435,6 +476,11 @@ function createStepNode(step, index, workflow, stepsList) {
     titleInput.style.borderRadius = '4px';
     titleInput.style.fontSize = '14px';
     titleInput.style.boxSizing = 'border-box';
+
+    // 添加标题输入事件
+    titleInput.addEventListener('input', (e) => {
+        step.title = e.target.value;
+    });
 
     titleContainer.appendChild(favicon);
     titleContainer.appendChild(titleInput);

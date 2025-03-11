@@ -20,9 +20,18 @@ if (chrome.sidePanel && chrome.sidePanel.onShown) {
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     if (message.type === 'GET_WEBSITE_INFO') {
         // 获取网站信息
-        getFaviconAndTitle(message.url).then(response => {
-            sendResponse(response);
-        });
+        getFaviconAndTitle(message.url)
+            .then(response => {
+                console.log('获取到网站信息:', response); // 添加调试日志
+                sendResponse(response);
+            })
+            .catch(error => {
+                console.error('获取网站信息失败:', error); // 添加错误日志
+                sendResponse({
+                    title: new URL(message.url).hostname,
+                    favicon: `https://www.google.com/s2/favicons?domain=${encodeURIComponent(new URL(message.url).hostname)}&sz=64`
+                });
+            });
         return true; // 保持消息通道打开
     }
 });
@@ -47,16 +56,21 @@ async function getFaviconAndTitle(url) {
         ];
 
         // 创建一个临时标签页来获取标题和页面中声明的图标
-        const tab = await chrome.tabs.create({ url: url, active: false });
+        const tab = await chrome.tabs.create({ 
+            url: url, 
+            active: false,
+            pinned: true // 固定标签页以减少视觉干扰
+        });
 
         // 等待页面加载完成
-        await new Promise(resolve => {
-            chrome.tabs.onUpdated.addListener(function listener(tabId, info) {
+        await new Promise((resolve) => {
+            function listener(tabId, info) {
                 if (tabId === tab.id && info.status === 'complete') {
                     chrome.tabs.onUpdated.removeListener(listener);
                     resolve();
                 }
-            });
+            }
+            chrome.tabs.onUpdated.addListener(listener);
         });
 
         // 获取标题和页面中声明的图标
@@ -102,9 +116,16 @@ async function getFaviconAndTitle(url) {
             favicon = `https://www.google.com/s2/favicons?domain=${encodeURIComponent(domain)}&sz=64`;
         }
 
-        return { title: pageInfo.title, favicon };
+        return { 
+            title: pageInfo.title || domain, // 如果没有标题就使用域名
+            favicon 
+        };
     } catch (error) {
         console.error('获取网站信息失败:', error);
-        return { title: '', favicon: '' };
+        // 返回域名作为标题和默认图标
+        return { 
+            title: new URL(url).hostname,
+            favicon: `https://www.google.com/s2/favicons?domain=${encodeURIComponent(new URL(url).hostname)}&sz=64`
+        };
     }
 } 
