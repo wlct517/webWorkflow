@@ -18,7 +18,7 @@ export function exportSelected(selectedIds) {
                 // 使用 chrome.downloads.download API 保存到桌面
                 chrome.downloads.download({
                     url: url,
-                    filename: `workflows_${new Date().toISOString()}.json`,
+                    filename: `workflows_${new Date().toLocaleDateString().replace(/[\/\\]/g, '-')}.json`,
                     saveAs: false,
                     conflictAction: 'uniquify'
                 }, (downloadId) => {
@@ -51,7 +51,7 @@ export function exportAll() {
                 // 使用 chrome.downloads.download API 保存到桌面
                 chrome.downloads.download({
                     url: url,
-                    filename: `workflows_${new Date().toISOString()}.json`,
+                    filename: `workflows_${new Date().toLocaleDateString().replace(/[\/\\]/g, '-')}.json`,
                     saveAs: false,
                     conflictAction: 'uniquify'
                 }, (downloadId) => {

@@ -1,6 +1,6 @@
 // 监听安装事件
 chrome.runtime.onInstalled.addListener(() => {
-    console.log('工作流助手已安装');
+    console.log('多网页工作流助手已安装');
 });
 
 // 监听扩展图标点击事件
