@@ -14,14 +14,21 @@ export function exportSelected(selectedIds) {
                 
                 const blob = new Blob([JSON.stringify(selectedWorkflows, null, 2)], { type: 'application/json' });
                 const url = URL.createObjectURL(blob);
-                const a = document.createElement('a');
-                a.href = url;
-                a.download = `workflows_${new Date().toISOString()}.json`;
-                document.body.appendChild(a);
-                a.click();
-                document.body.removeChild(a);
-                URL.revokeObjectURL(url);
-                resolve();
+                
+                // 使用 chrome.downloads.download API 保存到桌面
+                chrome.downloads.download({
+                    url: url,
+                    filename: `workflows_${new Date().toISOString()}.json`,
+                    saveAs: false,
+                    conflictAction: 'uniquify'
+                }, (downloadId) => {
+                    if (chrome.runtime.lastError) {
+                        reject(new Error(chrome.runtime.lastError.message));
+                    } else {
+                        URL.revokeObjectURL(url);
+                        resolve();
+                    }
+                });
             });
         } catch (error) {
             reject(error);
@@ -40,14 +47,21 @@ export function exportAll() {
                 const workflows = result.workflows || [];
                 const blob = new Blob([JSON.stringify(workflows, null, 2)], { type: 'application/json' });
                 const url = URL.createObjectURL(blob);
-                const a = document.createElement('a');
-                a.href = url;
-                a.download = `workflows_${new Date().toISOString()}.json`;
-                document.body.appendChild(a);
-                a.click();
-                document.body.removeChild(a);
-                URL.revokeObjectURL(url);
-                resolve();
+                
+                // 使用 chrome.downloads.download API 保存到桌面
+                chrome.downloads.download({
+                    url: url,
+                    filename: `workflows_${new Date().toISOString()}.json`,
+                    saveAs: false,
+                    conflictAction: 'uniquify'
+                }, (downloadId) => {
+                    if (chrome.runtime.lastError) {
+                        reject(new Error(chrome.runtime.lastError.message));
+                    } else {
+                        URL.revokeObjectURL(url);
+                        resolve();
+                    }
+                });
             });
         } catch (error) {
             reject(error);

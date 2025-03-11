@@ -200,6 +200,21 @@ function createStepElement(step, index) {
     progressFill.style.bottom = '0';
     progressFill.style.left = '0';
 
+    // 检查是否所有步骤都已完成
+    function checkAllStepsCompleted() {
+        const allProgressFills = element.parentElement.querySelectorAll('.progress-fill');
+        return Array.from(allProgressFills).every(fill => fill.style.height === '100%');
+    }
+
+    // 重置所有进度条的颜色
+    function resetAllProgressBars() {
+        const allProgressFills = element.parentElement.querySelectorAll('.progress-fill');
+        allProgressFills.forEach(fill => {
+            fill.style.transition = 'all 2s ease';
+            fill.style.backgroundColor = '#eee';
+        });
+    }
+
     progressBar.appendChild(progressFill);
     element.appendChild(progressBar);
 
@@ -315,11 +330,15 @@ function createStepElement(step, index) {
             // 点击时显示进度条动画
             progressFill.style.height = '100%';
             
-            // 10秒后开始变灰
+            // 检查是否所有步骤都已完成
             setTimeout(() => {
-                progressFill.style.transition = 'all 2s ease'; // 变灰动画时间设为2秒
-                progressFill.style.backgroundColor = '#eee';
-            }, 10000);
+                if (checkAllStepsCompleted()) {
+                    // 所有步骤完成后10秒开始变灰
+                    setTimeout(() => {
+                        resetAllProgressBars();
+                    }, 10000);
+                }
+            }, 500); // 等待进度条动画完成
             
             chrome.tabs.create({ url: step.url });
         }
