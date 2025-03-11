@@ -24,8 +24,8 @@ let selectedColors = [];
 // 更新AI按钮状态
 async function updateAIButtonState() {
     const settingsBtn = document.getElementById('settingsBtn');
-    const result = await chrome.storage.local.get(['apiKey']);
-    if (result.apiKey) {
+    const result = await chrome.storage.local.get(['apiKey', 'aiEnabled']);
+    if (result.apiKey && result.aiEnabled) {
         settingsBtn.classList.add('active');
     } else {
         settingsBtn.classList.remove('active');
@@ -47,11 +47,22 @@ async function loadWorkflows(searchTerm = '', filterColors = []) {
     // 应用搜索过滤
     if (searchTerm) {
         try {
-            // 尝试使用AI搜索
-            filteredWorkflows = await searchWithAI(searchTerm, workflows);
+            // 检查AI搜索是否启用
+            const { apiKey, aiEnabled } = await chrome.storage.local.get(['apiKey', 'aiEnabled']);
+            
+            if (apiKey && aiEnabled) {
+                // 使用AI搜索
+                filteredWorkflows = await searchWithAI(searchTerm, workflows);
+            } else {
+                // 使用普通搜索
+                filteredWorkflows = workflows.filter(w => 
+                    w.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                    w.description?.toLowerCase().includes(searchTerm.toLowerCase())
+                );
+            }
         } catch (error) {
-            console.error('AI搜索失败，使用普通搜索：', error);
-            // 如果AI搜索失败，使用普通搜索
+            console.error('搜索失败，使用普通搜索：', error);
+            // 如果搜索失败，使用普通搜索
             filteredWorkflows = workflows.filter(w => 
                 w.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
                 w.description?.toLowerCase().includes(searchTerm.toLowerCase())
@@ -169,13 +180,48 @@ initDB().then(() => {
     updateAIButtonState();
 
     // 设置按钮点击事件
+    const toggleNotesBtn = document.getElementById('toggleNotesBtn');
+    const batchDeleteBtn = document.getElementById('batchDeleteBtn');
+
+    // 用于跟踪备注状态
+    let isNotesExpanded = false;
+
+    toggleNotesBtn.addEventListener('click', () => {
+        const toggleButtons = document.querySelectorAll('.workflow-item .toggle-button');
+        if (!isNotesExpanded) {
+            // 展开所有备注
+            toggleButtons.forEach(btn => {
+                const memoContainer = btn.parentElement.nextElementSibling;
+                if (memoContainer && memoContainer.style.display === 'none') {
+                    btn.click();
+                }
+            });
+            toggleNotesBtn.textContent = '备注关闭';
+        } else {
+            // 关闭所有备注
+            toggleButtons.forEach(btn => {
+                const memoContainer = btn.parentElement.nextElementSibling;
+                if (memoContainer && memoContainer.style.display !== 'none') {
+                    btn.click();
+                }
+            });
+            toggleNotesBtn.textContent = '备注展开';
+        }
+        isNotesExpanded = !isNotesExpanded;
+    });
+
+    batchDeleteBtn.addEventListener('click', () => {
+        showBatchDeleteDialog();
+    });
+
+    // AI设置按钮点击事件
     settingsBtn.addEventListener('click', () => {
         showSettings();
     });
 
     // 监听storage变化，更新AI按钮状态
     chrome.storage.onChanged.addListener((changes) => {
-        if (changes.apiKey) {
+        if (changes.apiKey || changes.aiEnabled) {
             updateAIButtonState();
         }
     });
@@ -229,9 +275,9 @@ initDB().then(() => {
     // 导入导出功能
     importBtn.addEventListener('click', async () => {
         try {
-            await importData();
+            const result = await importData();
             await loadWorkflows();
-            alert('导入成功！');
+            alert(result.message);
         } catch (error) {
             alert('导入失败：' + error.message);
         }
@@ -315,7 +361,7 @@ initDB().then(() => {
     // 更多选项按钮点击事件
     const moreOptionsBtn = document.getElementById('moreOptionsBtn');
     moreOptionsBtn.addEventListener('click', () => {
-        showMoreOptionsDialog();
+        // 移除原有的showMoreOptionsDialog调用
     });
 
     // 颜色筛选按钮点击事件
@@ -328,20 +374,27 @@ initDB().then(() => {
     loadWorkflows();
 });
 
-// 显示更多选项对话框
-function showMoreOptionsDialog() {
+// 显示批量删除对话框
+function showBatchDeleteDialog() {
     const dialog = document.createElement('div');
     dialog.className = 'settings-modal';
     dialog.style.display = 'flex';
+    dialog.style.justifyContent = 'center';  // 水平居中
+    dialog.style.alignItems = 'center';      // 垂直居中
+    dialog.style.paddingTop = '0';           // 移除顶部内边距
 
     const content = document.createElement('div');
     content.className = 'settings-content';
+    content.style.margin = '0 auto';         // 居中对齐
+    content.style.maxHeight = '90vh';        // 最大高度
+    content.style.width = '90%';             // 宽度
+    content.style.maxWidth = '400px';        // 最大宽度
 
     // 创建头部
     const header = document.createElement('div');
     header.className = 'settings-header';
     header.innerHTML = `
-        <h2>更多选项</h2>
+        <h2>选择要删除的工作流</h2>
         <button class="settings-close">
             <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
                 <path d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"/>
@@ -349,34 +402,12 @@ function showMoreOptionsDialog() {
         </button>
     `;
 
-    // 创建选项列表
-    const optionsList = document.createElement('div');
-    optionsList.style.display = 'flex';
-    optionsList.style.flexDirection = 'column';
-    optionsList.style.gap = '12px';
-    optionsList.style.marginTop = '16px';
-
-    // 展开所有备注选项
-    const expandAllBtn = document.createElement('button');
-    expandAllBtn.className = 'secondary-button';
-    expandAllBtn.style.width = '100%';
-    expandAllBtn.textContent = '展开所有备注';
-    expandAllBtn.addEventListener('click', () => {
-        const toggleButtons = document.querySelectorAll('.workflow-item .toggle-button');
-        toggleButtons.forEach(btn => {
-            const memoContainer = btn.parentElement.nextElementSibling;
-            if (memoContainer && memoContainer.style.display === 'none') {
-                btn.click();
-            }
-        });
-        dialog.remove();
-    });
-
-    // 批量删除选项
-    const deleteSection = document.createElement('div');
-    deleteSection.style.display = 'flex';
-    deleteSection.style.flexDirection = 'column';
-    deleteSection.style.gap = '8px';
+    // 创建选择区域
+    const selectSection = document.createElement('div');
+    selectSection.style.display = 'flex';
+    selectSection.style.flexDirection = 'column';
+    selectSection.style.gap = '8px';
+    selectSection.style.marginTop = '16px';
 
     const selectAllContainer = document.createElement('div');
     selectAllContainer.style.display = 'flex';
@@ -458,16 +489,12 @@ function showMoreOptionsDialog() {
         }
     });
 
-    deleteSection.appendChild(selectAllContainer);
-    deleteSection.appendChild(workflowList);
-    deleteSection.appendChild(deleteBtn);
-
-    optionsList.appendChild(expandAllBtn);
-    optionsList.appendChild(document.createElement('hr'));
-    optionsList.appendChild(deleteSection);
+    selectSection.appendChild(selectAllContainer);
+    selectSection.appendChild(workflowList);
+    selectSection.appendChild(deleteBtn);
 
     content.appendChild(header);
-    content.appendChild(optionsList);
+    content.appendChild(selectSection);
     dialog.appendChild(content);
 
     // 关闭按钮事件

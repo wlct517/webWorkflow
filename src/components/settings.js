@@ -65,20 +65,28 @@ export function createSettingsModal() {
     apiKeyGroup.appendChild(apiKeyLabelContainer);
     apiKeyGroup.appendChild(apiKeyInput);
 
-    // 从storage中获取已保存的API Key
-    chrome.storage.local.get(['apiKey'], (result) => {
+    // 从storage中获取已保存的API Key和启用状态
+    chrome.storage.local.get(['apiKey', 'aiEnabled'], (result) => {
         if (result.apiKey) {
             apiKeyInput.value = result.apiKey;
         }
+        // 根据存储的状态更新按钮
+        updateToggleButton(result.aiEnabled);
     });
 
-    const saveBtn = document.createElement('button');
-    saveBtn.className = 'primary-button';
-    saveBtn.textContent = '保存';
-    saveBtn.type = 'submit';
+    const toggleBtn = document.createElement('button');
+    toggleBtn.className = 'primary-button';
+    toggleBtn.type = 'submit';
+    toggleBtn.style.transition = 'all 0.3s ease';
+
+    // 更新按钮状态的函数
+    function updateToggleButton(enabled) {
+        toggleBtn.textContent = enabled ? '关闭' : '启用';
+        toggleBtn.style.backgroundColor = enabled ? '#8E8E93' : '#007AFF';
+    }
 
     form.appendChild(apiKeyGroup);
-    form.appendChild(saveBtn);
+    form.appendChild(toggleBtn);
 
     // 添加表单提交事件
     form.addEventListener('submit', async (e) => {
@@ -86,11 +94,21 @@ export function createSettingsModal() {
         const apiKey = apiKeyInput.value.trim();
         
         try {
-            await chrome.storage.local.set({ apiKey });
-            modal.style.display = 'none';
-            alert('设置已保存');
+            // 获取当前的启用状态并切换
+            const { aiEnabled = false } = await chrome.storage.local.get(['aiEnabled']);
+            const newEnabled = !aiEnabled;
+            
+            // 保存API Key和新的启用状态
+            await chrome.storage.local.set({ 
+                apiKey,
+                aiEnabled: newEnabled 
+            });
+            
+            // 更新按钮状态
+            updateToggleButton(newEnabled);
+            
         } catch (error) {
-            alert('保存失败：' + error.message);
+            alert('设置失败：' + error.message);
         }
     });
 

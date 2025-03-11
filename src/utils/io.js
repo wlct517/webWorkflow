@@ -90,12 +90,35 @@ export function importData() {
                             }
                         });
 
-                        // 导入工作流
-                        for (const workflow of workflows) {
+                        // 获取现有工作流
+                        const existingWorkflows = await getAllWorkflows();
+                        const existingIds = new Set(existingWorkflows.map(w => w.id));
+                        const existingNames = new Set(existingWorkflows.map(w => w.name));
+
+                        // 过滤出不重复的工作流
+                        const newWorkflows = workflows.filter(workflow => {
+                            const isDuplicate = existingIds.has(workflow.id) || existingNames.has(workflow.name);
+                            return !isDuplicate;
+                        });
+
+                        // 导入不重复的工作流
+                        for (const workflow of newWorkflows) {
                             await addWorkflow(workflow);
                         }
 
-                        resolve();
+                        // 如果有被过滤掉的工作流，提示用户
+                        if (newWorkflows.length < workflows.length) {
+                            const skippedCount = workflows.length - newWorkflows.length;
+                            resolve({
+                                success: true,
+                                message: `成功导入 ${newWorkflows.length} 个工作流，跳过 ${skippedCount} 个重复的工作流。`
+                            });
+                        } else {
+                            resolve({
+                                success: true,
+                                message: `成功导入 ${newWorkflows.length} 个工作流。`
+                            });
+                        }
                     } catch (error) {
                         reject(new Error('解析文件失败: ' + error.message));
                     }
