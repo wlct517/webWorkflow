@@ -42,6 +42,9 @@ export function createWorkflowElement(workflow) {
     title.style.flex = '1';  // 修改为flex布局
     title.style.minWidth = '100px';  // 添加最小宽度
     title.style.padding = '4px 0';
+    title.style.whiteSpace = 'nowrap';  // 不换行
+    title.style.overflow = 'hidden';     // 隐藏溢出内容
+    title.style.textOverflow = 'ellipsis';  // 显示省略号
 
     // 操作按钮容器
     const actions = document.createElement('div');
@@ -231,12 +234,16 @@ function createStepElement(step, index) {
     content.style.display = 'flex';
     content.style.flexDirection = 'column';
     content.style.gap = '4px';
+    content.style.minWidth = '0';  // 允许内容收缩
+    content.style.overflow = 'hidden';  // 隐藏溢出内容
 
     // 标题行容器
     const titleRow = document.createElement('div');
     titleRow.style.display = 'flex';
     titleRow.style.alignItems = 'center';
     titleRow.style.gap = '8px';
+    titleRow.style.minWidth = '0';  // 允许内容收缩
+    titleRow.style.overflow = 'hidden';  // 隐藏溢出内容
 
     // 网站图标
     const favicon = document.createElement('img');
@@ -274,6 +281,9 @@ function createStepElement(step, index) {
     title.textContent = step.title;
     title.style.fontWeight = '500';
     title.style.flex = '1';
+    title.style.whiteSpace = 'nowrap';  // 不换行
+    title.style.overflow = 'hidden';     // 隐藏溢出内容
+    title.style.textOverflow = 'ellipsis';  // 显示省略号
 
     const url = document.createElement('div');
     const displayUrl = step.url ? (() => {
@@ -338,6 +348,7 @@ function createStepElement(step, index) {
     memoContainer.style.borderTop = '1px solid #ddd';
     memoContainer.style.color = '#666';
     memoContainer.style.fontSize = '12px';
+    memoContainer.style.overflowY = 'hidden';   // 修改：隐藏父容器的滚动条
     
     // 创建备注输入框
     const memoInput = document.createElement('textarea');
@@ -349,17 +360,18 @@ function createStepElement(step, index) {
     memoInput.style.color = '#666';
     memoInput.style.fontSize = '12px';
     memoInput.style.padding = '0';
-    memoInput.style.resize = 'vertical';
+    memoInput.style.resize = 'none';
     memoInput.style.minHeight = '20px';
-    memoInput.style.maxHeight = '200px';
-    memoInput.style.overflow = 'hidden';
+    memoInput.style.maxHeight = '200px';  // 添加：限制文本框最大高度
+    memoInput.style.overflowY = 'auto';   // 添加：启用文本框的滚动条
     memoInput.style.fontFamily = 'inherit';
     memoInput.style.textDecoration = 'none';
     
     // 自动调整高度的函数
     function adjustHeight() {
         memoInput.style.height = 'auto';
-        memoInput.style.height = memoInput.scrollHeight + 'px';
+        const newHeight = Math.min(memoInput.scrollHeight, 200);  // 限制最大高度为200px
+        memoInput.style.height = newHeight + 'px';
     }
     
     // 初始调整高度
