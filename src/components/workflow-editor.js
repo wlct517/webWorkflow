@@ -276,6 +276,7 @@ export function createWorkflowEditor(workflow, onSave, isNew = false) {
     cancelBtn.style.cursor = 'pointer';
     cancelBtn.style.flex = '1';
     cancelBtn.style.fontWeight = '500';
+    cancelBtn.style.fontSize = '14px';
     cancelBtn.style.display = 'flex';
     cancelBtn.style.alignItems = 'center';
     cancelBtn.style.justifyContent = 'center';
