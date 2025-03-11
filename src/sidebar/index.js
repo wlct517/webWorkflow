@@ -21,6 +21,17 @@ const colors = [
 // 改为数组以支持多选
 let selectedColors = [];
 
+// 更新AI按钮状态
+async function updateAIButtonState() {
+    const settingsBtn = document.getElementById('settingsBtn');
+    const result = await chrome.storage.local.get(['apiKey']);
+    if (result.apiKey) {
+        settingsBtn.classList.add('active');
+    } else {
+        settingsBtn.classList.remove('active');
+    }
+}
+
 // 加载工作流列表
 async function loadWorkflows(searchTerm = '', filterColors = []) {
     const workflows = await getAllWorkflows();
@@ -154,6 +165,21 @@ initDB().then(() => {
     const exportAllBtn = document.getElementById('exportAllBtn');
     const settingsBtn = document.getElementById('settingsBtn');
 
+    // 初始化时更新AI按钮状态
+    updateAIButtonState();
+
+    // 设置按钮点击事件
+    settingsBtn.addEventListener('click', () => {
+        showSettings();
+    });
+
+    // 监听storage变化，更新AI按钮状态
+    chrome.storage.onChanged.addListener((changes) => {
+        if (changes.apiKey) {
+            updateAIButtonState();
+        }
+    });
+
     // 创建新工作流
     async function createNewWorkflow() {
         const workflow = {
@@ -284,11 +310,6 @@ initDB().then(() => {
         } catch (error) {
             alert('导出失败：' + error.message);
         }
-    });
-
-    // 设置按钮点击事件
-    settingsBtn.addEventListener('click', () => {
-        showSettings();
     });
 
     // 更多选项按钮点击事件

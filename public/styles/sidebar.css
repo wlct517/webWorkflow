@@ -95,6 +95,10 @@ body {
     z-index: 1;
 }
 
+.search-bar .settings-button.active {
+    background-color: var(--hover-color);
+}
+
 .settings-button {
     display: flex;
     align-items: center;
@@ -121,9 +125,10 @@ body {
     height: 100%;
     background-color: rgba(0, 0, 0, 0.5);
     display: flex;
-    justify-content: center;
-    align-items: center;
+    justify-content: flex-start;
+    align-items: flex-start;
     z-index: 1000;
+    padding-top: 60px;
 }
 
 .settings-content {
@@ -133,6 +138,7 @@ body {
     width: 90%;
     max-width: 400px;
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+    margin: 0 auto;
 }
 
 .settings-header {
@@ -520,18 +526,20 @@ body {
     height: 100%;
     background-color: rgba(0, 0, 0, 0.5);
     display: flex;
-    justify-content: center;
-    align-items: center;
+    justify-content: flex-start;
+    align-items: flex-start;
     z-index: 1000;
+    padding-top: 60px;
 }
 
 .color-filter-content {
     background-color: white;
-    border-radius: 8px;
+    border-radius: 12px;
     padding: 20px;
     width: 90%;
     max-width: 400px;
     box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    margin: 0 auto;
 }
 
 .color-filter-content h3 {
