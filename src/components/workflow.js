@@ -332,8 +332,7 @@ function createStepElement(step, index) {
     memoContainer.style.fontSize = '12px';
     
     // 创建备注输入框
-    const memoInput = document.createElement('input');
-    memoInput.type = 'text';
+    const memoInput = document.createElement('textarea');
     memoInput.value = step.memo || '暂无备注';
     memoInput.style.width = '100%';
     memoInput.style.border = 'none';
@@ -342,9 +341,24 @@ function createStepElement(step, index) {
     memoInput.style.color = '#666';
     memoInput.style.fontSize = '12px';
     memoInput.style.padding = '0';
+    memoInput.style.resize = 'vertical';
+    memoInput.style.minHeight = '20px';
+    memoInput.style.maxHeight = '200px';
+    memoInput.style.overflow = 'hidden';
+    memoInput.style.fontFamily = 'inherit';
+    
+    // 自动调整高度的函数
+    function adjustHeight() {
+        memoInput.style.height = 'auto';
+        memoInput.style.height = memoInput.scrollHeight + 'px';
+    }
+    
+    // 初始调整高度
+    setTimeout(adjustHeight, 0);
     
     // 添加输入事件
     memoInput.addEventListener('input', async (e) => {
+        adjustHeight();
         step.memo = e.target.value;
         try {
             await updateWorkflow(workflow);

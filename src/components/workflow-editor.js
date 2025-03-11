@@ -440,8 +440,7 @@ function createStepNode(step, index, workflow, stepsList) {
     titleContainer.appendChild(titleInput);
 
     // 备注输入框
-    const memoInput = document.createElement('input');
-    memoInput.type = 'text';
+    const memoInput = document.createElement('textarea');
     memoInput.value = step.memo || '';
     memoInput.placeholder = '备注';
     memoInput.style.width = '100%';
@@ -451,52 +450,23 @@ function createStepNode(step, index, workflow, stepsList) {
     memoInput.style.fontSize = '14px';
     memoInput.style.boxSizing = 'border-box';
     memoInput.style.color = '#666';
-
-    // 添加输入事件
-    let urlInputTimeout;
-    urlInput.addEventListener('input', (e) => {
-        step.url = e.target.value;
-        
-        // 清除之前的定时器
-        clearTimeout(urlInputTimeout);
-        
-        // 设置新的定时器，延迟500ms后获取网站信息
-        urlInputTimeout = setTimeout(async () => {
-            const url = e.target.value;
-            if (url && url.startsWith('http')) {
-                try {
-                    // 发送消息给background获取网站信息
-                    chrome.runtime.sendMessage(
-                        { type: 'GET_WEBSITE_INFO', url: url },
-                        (response) => {
-                            if (response) {
-                                if (response.title) {
-                                    titleInput.value = response.title;
-                                    step.title = response.title;
-                                }
-                                if (response.favicon) {
-                                    favicon.src = response.favicon;
-                                    step.favicon = response.favicon;
-                                }
-                            }
-                        }
-                    );
-                } catch (error) {
-                    console.error('获取网站信息失败:', error);
-                }
-            } else {
-                // 如果URL为空或无效，显示默认图标
-                favicon.src = defaultIcon;
-                step.favicon = defaultIcon;
-            }
-        }, 500);
-    });
-
-    titleInput.addEventListener('input', (e) => {
-        step.title = e.target.value;
-    });
-
+    memoInput.style.resize = 'vertical';
+    memoInput.style.minHeight = '32px';
+    memoInput.style.maxHeight = '200px';
+    memoInput.style.overflow = 'hidden';
+    memoInput.style.fontFamily = 'inherit';
+    
+    // 自动调整高度的函数
+    function adjustHeight() {
+        memoInput.style.height = 'auto';
+        memoInput.style.height = memoInput.scrollHeight + 'px';
+    }
+    
+    // 初始调整高度
+    setTimeout(adjustHeight, 0);
+    
     memoInput.addEventListener('input', (e) => {
+        adjustHeight();
         step.memo = e.target.value;
     });
 
