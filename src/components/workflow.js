@@ -29,22 +29,18 @@ export function createWorkflowElement(workflow) {
     header.style.boxSizing = 'border-box';  // 添加盒模型
 
     // 标题
-    const title = document.createElement('input');
-    title.type = 'text';
-    title.value = workflow.name;
-    title.placeholder = '输入标题';
+    const title = document.createElement('div');
+    title.textContent = workflow.name;
     title.style.margin = '0';
     title.style.fontSize = '16px';
     title.style.fontWeight = '500';
-    title.style.border = 'none';
-    title.style.outline = 'none';
-    title.style.backgroundColor = 'transparent';
-    title.style.flex = '1';  // 修改为flex布局
-    title.style.minWidth = '100px';  // 添加最小宽度
+    title.style.flex = '1';
+    title.style.minWidth = '100px';
     title.style.padding = '4px 0';
-    title.style.whiteSpace = 'nowrap';  // 不换行
-    title.style.overflow = 'hidden';     // 隐藏溢出内容
-    title.style.textOverflow = 'ellipsis';  // 显示省略号
+    title.style.whiteSpace = 'nowrap';
+    title.style.overflow = 'hidden';
+    title.style.textOverflow = 'ellipsis';
+    title.style.cursor = 'pointer';
 
     // 操作按钮容器
     const actions = document.createElement('div');
@@ -77,57 +73,19 @@ export function createWorkflowElement(workflow) {
     header.appendChild(title);
     header.appendChild(actions);
 
-    // 添加输入事件
-    title.addEventListener('input', async (e) => {
-        workflow.name = e.target.value;
-        try {
-            await updateWorkflow(workflow);
-        } catch (error) {
-            console.error('更新标题失败：', error);
-        }
-    });
-
-    // 添加焦点样式
-    title.addEventListener('focus', () => {
-        title.style.borderBottom = '1px solid #007AFF';
-    });
-
-    title.addEventListener('blur', () => {
-        title.style.borderBottom = 'none';
-    });
-
     // 描述
-    const description = document.createElement('input');
-    description.type = 'text';
-    description.value = workflow.description || '';
-    description.placeholder = '点击编辑工作流描述';
+    const description = document.createElement('div');
+    description.textContent = workflow.description || '';
     description.style.margin = '0';
     description.style.fontSize = '14px';
     description.style.color = '#666';
     description.style.width = '100%';
-    description.style.border = 'none';
     description.style.padding = '4px 0';
-    description.style.outline = 'none';
     description.style.backgroundColor = 'transparent';
-
-    // 添加输入事件
-    description.addEventListener('input', async (e) => {
-        workflow.description = e.target.value;
-        try {
-            await updateWorkflow(workflow);
-        } catch (error) {
-            console.error('更新描述失败：', error);
-        }
-    });
-
-    // 添加焦点样式
-    description.addEventListener('focus', () => {
-        description.style.borderBottom = '1px solid #007AFF';
-    });
-
-    description.addEventListener('blur', () => {
-        description.style.borderBottom = 'none';
-    });
+    description.style.cursor = 'pointer';
+    description.style.whiteSpace = 'nowrap';  // 不换行
+    description.style.overflow = 'hidden';     // 隐藏溢出内容
+    description.style.textOverflow = 'ellipsis';  // 显示省略号
 
     // 步骤列表
     const stepsList = document.createElement('div');
@@ -148,6 +106,44 @@ export function createWorkflowElement(workflow) {
         emptyMessage.style.margin = '12px 0';
         stepsList.appendChild(emptyMessage);
     }
+
+    // 添加点击事件处理函数
+    async function openWorkflowSteps() {
+        if (workflow.steps.length === 0) return;
+        
+        // 获取所有步骤的进度条
+        const progressFills = stepsList.querySelectorAll('.progress-fill');
+        
+        // 按顺序打开每个步骤
+        for (let i = 0; i < workflow.steps.length; i++) {
+            const step = workflow.steps[i];
+            if (step.url) {
+                // 打开网页
+                await chrome.tabs.create({ url: step.url });
+                
+                // 点亮进度条
+                if (progressFills[i]) {
+                    progressFills[i].style.height = '100%';
+                    progressFills[i].style.backgroundColor = '#34C759';
+                }
+                
+                // 等待一小段时间再打开下一个
+                await new Promise(resolve => setTimeout(resolve, 500));
+            }
+        }
+        
+        // 10秒后重置所有进度条颜色
+        setTimeout(() => {
+            progressFills.forEach(fill => {
+                fill.style.transition = 'all 2s ease';
+                fill.style.backgroundColor = '#eee';
+            });
+        }, 10000);
+    }
+
+    // 为标题和描述添加点击事件
+    title.addEventListener('click', openWorkflowSteps);
+    description.addEventListener('click', openWorkflowSteps);
 
     // 组装工作流元素
     element.appendChild(header);
