@@ -107,6 +107,9 @@ export function createSettingsModal() {
             // 更新按钮状态
             updateToggleButton(newEnabled);
             
+            // 自动关闭弹窗
+            modal.style.display = 'none';
+            
         } catch (error) {
             alert('设置失败：' + error.message);
         }

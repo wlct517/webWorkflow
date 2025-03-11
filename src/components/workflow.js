@@ -192,7 +192,7 @@ function createStepElement(step, index) {
     progressFill.style.width = '100%';
     progressFill.style.height = '0%';
     progressFill.style.backgroundColor = '#34C759';
-    progressFill.style.transition = 'height 0.3s ease';
+    progressFill.style.transition = 'all 0.3s ease';  // 修改为all，使背景色也有过渡效果
     progressFill.style.position = 'absolute';
     progressFill.style.bottom = '0';
     progressFill.style.left = '0';
@@ -279,7 +279,8 @@ function createStepElement(step, index) {
     const displayUrl = step.url ? (() => {
         try {
             const urlObj = new URL(step.url);
-            return urlObj.hostname;
+            // 去掉www.前缀
+            return urlObj.hostname.replace(/^www\./, '');
         } catch (e) {
             return step.url;
         }
@@ -303,6 +304,13 @@ function createStepElement(step, index) {
         if (step.url) {
             // 点击时显示进度条动画
             progressFill.style.height = '100%';
+            
+            // 10秒后开始变灰
+            setTimeout(() => {
+                progressFill.style.transition = 'all 2s ease'; // 变灰动画时间设为2秒
+                progressFill.style.backgroundColor = '#eee';
+            }, 10000);
+            
             chrome.tabs.create({ url: step.url });
         }
     });
@@ -346,6 +354,7 @@ function createStepElement(step, index) {
     memoInput.style.maxHeight = '200px';
     memoInput.style.overflow = 'hidden';
     memoInput.style.fontFamily = 'inherit';
+    memoInput.style.textDecoration = 'none';
     
     // 自动调整高度的函数
     function adjustHeight() {
@@ -369,11 +378,11 @@ function createStepElement(step, index) {
     
     // 添加焦点样式
     memoInput.addEventListener('focus', () => {
-        memoInput.style.borderBottom = '1px solid #007AFF';
+        memoInput.style.backgroundColor = '#f5f5f5';
     });
     
     memoInput.addEventListener('blur', () => {
-        memoInput.style.borderBottom = 'none';
+        memoInput.style.backgroundColor = 'transparent';
     });
     
     memoContainer.appendChild(memoInput);
