@@ -114,12 +114,19 @@ export function createWorkflowElement(workflow) {
         // 获取所有步骤的进度条
         const progressFills = stepsList.querySelectorAll('.progress-fill');
         
+        let firstTabId = null; // 存储第一个标签页的ID
+
         // 按顺序打开每个步骤
         for (let i = 0; i < workflow.steps.length; i++) {
             const step = workflow.steps[i];
             if (step.url) {
                 // 打开网页
-                await chrome.tabs.create({ url: step.url });
+                const tab = await chrome.tabs.create({ url: step.url });
+                
+                // 保存第一个标签页的ID
+                if (i === 0) {
+                    firstTabId = tab.id;
+                }
                 
                 // 点亮进度条
                 if (progressFills[i]) {
@@ -130,6 +137,11 @@ export function createWorkflowElement(workflow) {
                 // 等待一小段时间再打开下一个
                 await new Promise(resolve => setTimeout(resolve, 500));
             }
+        }
+
+        // 激活第一个标签页
+        if (firstTabId) {
+            await chrome.tabs.update(firstTabId, { active: true });
         }
         
         // 10秒后重置所有进度条颜色
