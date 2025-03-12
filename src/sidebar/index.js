@@ -60,6 +60,18 @@ async function loadWorkflows(searchTerm = '', filterColors = []) {
                     w.description?.toLowerCase().includes(searchTerm.toLowerCase())
                 );
             }
+
+            // 确保工作流的唯一性：使用Map来去重，保持相关度排序
+            const uniqueWorkflows = new Map();
+            filteredWorkflows.forEach(workflow => {
+                if (!uniqueWorkflows.has(workflow.id)) {
+                    uniqueWorkflows.set(workflow.id, workflow);
+                }
+            });
+            
+            // 转换回数组，保持原有顺序
+            filteredWorkflows = Array.from(uniqueWorkflows.values());
+
         } catch (error) {
             console.error('搜索失败，使用普通搜索：', error);
             // 如果搜索失败，使用普通搜索
@@ -67,12 +79,17 @@ async function loadWorkflows(searchTerm = '', filterColors = []) {
                 w.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
                 w.description?.toLowerCase().includes(searchTerm.toLowerCase())
             );
+            
+            // 对普通搜索结果也进行去重
+            const uniqueWorkflows = new Map();
+            filteredWorkflows.forEach(workflow => {
+                if (!uniqueWorkflows.has(workflow.id)) {
+                    uniqueWorkflows.set(workflow.id, workflow);
+                }
+            });
+            
+            filteredWorkflows = Array.from(uniqueWorkflows.values());
         }
-
-        // 去重：使用 Set 和 Map 来确保工作流的唯一性
-        filteredWorkflows = Array.from(
-            new Map(filteredWorkflows.map(workflow => [workflow.id, workflow])).values()
-        );
     }
 
     // 应用颜色过滤
