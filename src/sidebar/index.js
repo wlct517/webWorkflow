@@ -304,7 +304,15 @@ initDB().then(() => {
         clearTimeout(searchTimeout);
         searchTimeout = setTimeout(() => {
             loadWorkflows(e.target.value, selectedColors);
-        }, 300);
+        }, 1000);
+    });
+
+    // 添加回车搜索功能
+    searchInput.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') {
+            clearTimeout(searchTimeout); // 清除之前的定时器
+            loadWorkflows(e.target.value, selectedColors);
+        }
     });
 
     // 导入导出功能
