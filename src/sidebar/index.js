@@ -304,7 +304,7 @@ initDB().then(() => {
         clearTimeout(searchTimeout);
         searchTimeout = setTimeout(() => {
             loadWorkflows(e.target.value, selectedColors);
-        }, 1000);
+        }, 500);
     });
 
     // 添加回车搜索功能
